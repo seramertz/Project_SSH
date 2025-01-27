@@ -28,7 +28,7 @@ const (
 
 type Elevator struct {	
 	Floor int
-	Dirn MotorDirection
+	Dirn elevio.MotorDirection
 	Requests [NumFloors][NumButtons]bool
 	Behaviour ElevatorBehaviour
 	Config struct {
@@ -40,7 +40,7 @@ type Elevator struct {
 func ElevatorUnIntialized()	Elevator {
 	return Elevator{
 		Floor: -1, 
-		Dirn: MD_Stop,
+		Dirn: elevio.MD_Stop,
 		Behaviour: EB_idle,
 	}
 }
@@ -57,13 +57,13 @@ func EBtoString(eb ElevatorBehaviour)string{
 	return "Unknown"
 }
 
-func EDToString(dirn MotorDirection) string {
+func EDToString(dirn elevio.MotorDirection) string {
 	switch dirn {
-	case MD_Up:
+	case elevio.MD_Up:
 		return "Up"
-	case MD_Down:
+	case elevio.MD_Down:
 		return "Down"
-	case MD_Stop:
+	case elevio.MD_Stop:
 		return "Stop"
 	}
 	return "Unknown"
