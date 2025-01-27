@@ -2,6 +2,7 @@ package elevator
 
 import (
 	"Driver-go/elevio"
+	"fmt"
 )
 
 
@@ -94,19 +95,43 @@ func requestsShouldStop(e Elevator) bool {
 		return false
 	}
 }
-
+/*
 func requestsShouldClearImmediately(e Elevator, btn_floor int, btn_type elevio.ButtonType) bool {
 	switch e.Config.clearRequestVariant {
 	case CRV_all:
 		return e.Floor == btn_floor
 	case CRV_InDirn:
 		return e.Floor == btn_floor && 
-		((e.Dirn == elevio.MD_Up && btn_type == elevio.BT_HallUp) ||
+		(
+			(e.Dirn == elevio.MD_Up && btn_type == elevio.BT_HallUp) ||
 		(e.Dirn == elevio.MD_Down && btn_type == elevio.BT_HallDown) ||
 		e.Dirn == elevio.MD_Stop || btn_type == elevio.BT_Cab)
 	default:
 		return false
 	}
+}
+*/
+
+func requestsShouldClearImmediately(e Elevator, btn_floor int, btn_type elevio.ButtonType) bool {
+    fmt.Printf("Checking if request should clear immediately: Floor=%d, BtnFloor=%d, BtnType=%d, Dirn=%d, ClearRequestVariant=%d\n", e.Floor, btn_floor, btn_type, e.Dirn, e.Config.clearRequestVariant)
+    
+    switch e.Config.clearRequestVariant {
+    case CRV_all:
+        result := e.Floor == btn_floor
+        fmt.Printf("CRV_all: %v\n", result)
+        return result
+    case CRV_InDirn:
+        result := e.Floor == btn_floor && 
+        (
+            (e.Dirn == elevio.MD_Up && btn_type == elevio.BT_HallUp) ||
+            (e.Dirn == elevio.MD_Down && btn_type == elevio.BT_HallDown) ||
+            e.Dirn == elevio.MD_Stop || btn_type == elevio.BT_Cab)
+        fmt.Printf("CRV_InDirn: %v\n", result)
+        return result
+    default:
+        fmt.Printf("Default case: false\n")
+        return false
+    }
 }
 
 func ClearAtCurrentFloor(e Elevator) Elevator{

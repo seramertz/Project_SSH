@@ -42,6 +42,11 @@ func ElevatorUnIntialized()	Elevator {
 		Floor: -1, 
 		Dirn: elevio.MD_Stop,
 		Behaviour: EB_idle,
+		Config: struct {
+			clearRequestVariant clearRequestVariant
+			DoorOpenDuration float64;
+		}{clearRequestVariant: CRV_all,
+			DoorOpenDuration: 3.0},
 	}
 }
 

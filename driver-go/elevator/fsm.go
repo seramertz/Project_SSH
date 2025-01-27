@@ -32,8 +32,10 @@ func FsmRequestsButtonPress(btnFloor int, btnType elevio.ButtonType) {
 
 	switch elevator.Behaviour {
 	case EB_doorOpen:
+		fmt.Printf("im in dooropen")
 		if requestsShouldClearImmediately(elevator, btnFloor, btnType) {
-			ClearAtCurrentFloor(elevator)
+			fmt.Printf("im in dooropen -> requestsshouldclear")
+			elevator = ClearAtCurrentFloor(elevator)
 			TimerStart(time.Duration(elevator.Config.DoorOpenDuration) * time.Second)
 		} else {
 			elevator.Requests[btnFloor][btnType] = true
@@ -50,13 +52,16 @@ func FsmRequestsButtonPress(btnFloor int, btnType elevio.ButtonType) {
 		switch pair.Behaviour {
 
 		case EB_doorOpen:
+			fmt.Printf("im in idle dooropen")
 			elevator.Behaviour = EB_doorOpen
 			TimerStart(time.Duration(elevator.Config.DoorOpenDuration) * time.Second)
+			elevator = ClearAtCurrentFloor(elevator)
 		case EB_moving:
 			elevio.SetMotorDirection(elevator.Dirn)
 		case EB_idle:
 			break
 		}
+		break
 	}
 	setAllLights()
 	fmt.Printf("\n New state: \n")
