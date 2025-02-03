@@ -29,13 +29,13 @@ func setFloorIndicator() {
 func FsmRequestsButtonPress(btnFloor int, btnType elevio.ButtonType) {
 	fmt.Printf("\n\n%s(%d, %d)\n", btnType, btnFloor, elevator.Floor)
 	ElevatorPrint(elevator)
-
+	
 	switch elevator.Behaviour {
 	case EB_doorOpen:
 		fmt.Printf("im in dooropen")
 		if requestsShouldClearImmediately(elevator, btnFloor, btnType) {
 			fmt.Printf("im in dooropen -> requestsshouldclear")
-			elevator = ClearAtCurrentFloor(elevator)
+			//elevator = ClearAtCurrentFloor(elevator)
 			TimerStart(time.Duration(elevator.Config.DoorOpenDuration) * time.Second)
 		} else {
 			elevator.Requests[btnFloor][btnType] = true
@@ -47,13 +47,13 @@ func FsmRequestsButtonPress(btnFloor int, btnType elevio.ButtonType) {
 		elevator.Requests[btnFloor][btnType] = true
 		pair := requestsChooseDirection(elevator)
 		elevator.Dirn = pair.Direction
-		elevator.Behaviour = EB_moving
+		elevator.Behaviour = pair.Behaviour
 
 		switch pair.Behaviour {
 
 		case EB_doorOpen:
 			fmt.Printf("im in idle dooropen")
-			elevator.Behaviour = EB_doorOpen
+			//elevator.Behaviour = EB_doorOpen
 			TimerStart(time.Duration(elevator.Config.DoorOpenDuration) * time.Second)
 			elevator = ClearAtCurrentFloor(elevator)
 		case EB_moving:
@@ -61,7 +61,6 @@ func FsmRequestsButtonPress(btnFloor int, btnType elevio.ButtonType) {
 		case EB_idle:
 			break
 		}
-		break
 	}
 	setAllLights()
 	fmt.Printf("\n New state: \n")
@@ -79,6 +78,7 @@ func FsmFloorArrival(newFloor int) {
 
 	case EB_moving:
 		if requestsShouldStop(elevator) {
+			fmt.Printf("im in fsmFloorArrival -> requestsshouldstop")
 			elevio.SetMotorDirection(elevio.MD_Stop)
 			elevio.SetDoorOpenLamp(true)
 			elevator = ClearAtCurrentFloor(elevator)

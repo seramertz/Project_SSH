@@ -34,36 +34,37 @@ func main(){
     go elevio.PollObstructionSwitch(drv_obstr)
     go elevio.PollStopButton(drv_stop)
     
-    d := elevio.MD_Up
+    dirn := elevio.MD_Up
+    
 
     for {
         select {
-        case a := <- drv_buttons:
-            fmt.Printf("%+v\n", a)
-            elevio.SetButtonLamp(a.Button, a.Floor, true)
-            elevator.FsmRequestsButtonPress(a.Floor, a.Button)
+        case buttonPressed := <- drv_buttons:
+            fmt.Printf("%+v\n", buttonPressed)
+            elevio.SetButtonLamp(buttonPressed.Button, buttonPressed.Floor, true)
+            elevator.FsmRequestsButtonPress(buttonPressed.Floor, buttonPressed.Button)
             
-        case a := <- drv_floors:
-            fmt.Printf("%+v\n", a)
-            if a == numFloors-1 {
-                d = elevio.MD_Down
-            } else if a == 0 {
-                d = elevio.MD_Up
+        case floorSensor := <- drv_floors:
+            fmt.Printf("%+v\n", floorSensor)
+            if floorSensor == numFloors-1 {
+                dirn = elevio.MD_Down
+            } else if floorSensor == 0 {
+                dirn = elevio.MD_Up
             }
-            elevio.SetMotorDirection(d)
-            elevator.FsmFloorArrival(a)
+            elevio.SetMotorDirection(dirn)
+            elevator.FsmFloorArrival(floorSensor)
             
             
-        case a := <- drv_obstr:
-            fmt.Printf("%+v\n", a)
-            if a {
+        case obstruction := <- drv_obstr:
+            fmt.Printf("%+v\n", obstruction)
+            if obstruction {
                 elevio.SetMotorDirection(elevio.MD_Stop)
             } else {
-                elevio.SetMotorDirection(d)
+                elevio.SetMotorDirection(dirn)
             }
             
-        case a := <- drv_stop:
-            fmt.Printf("%+v\n", a)
+        case stopPressed := <- drv_stop:
+            fmt.Printf("%+v\n", stopPressed)
             for f := 0; f < numFloors; f++ {
                 for b := elevio.ButtonType(0); b < 3; b++ {
                     elevio.SetButtonLamp(b, f, false)

@@ -117,16 +117,16 @@ func requestsShouldClearImmediately(e Elevator, btn_floor int, btn_type elevio.B
     
     switch e.Config.clearRequestVariant {
     case CRV_all:
-        result := e.Floor == btn_floor
-        fmt.Printf("CRV_all: %v\n", result)
+        result := (e.Floor == btn_floor)
+        fmt.Printf("CRV_All: Floor=%d, BtnFloor=%d, Result=%d\n", e.Floor, btn_floor, result)
         return result
     case CRV_InDirn:
-        result := e.Floor == btn_floor && 
+        result := (e.Floor == btn_floor && 
         (
             (e.Dirn == elevio.MD_Up && btn_type == elevio.BT_HallUp) ||
             (e.Dirn == elevio.MD_Down && btn_type == elevio.BT_HallDown) ||
-            e.Dirn == elevio.MD_Stop || btn_type == elevio.BT_Cab)
-        fmt.Printf("CRV_InDirn: %v\n", result)
+            e.Dirn == elevio.MD_Stop || btn_type == elevio.BT_Cab))
+			fmt.Printf("CRV_InDirn: Floor=%d, BtnFloor=%d, Dirn=%d, BtnType=%d, Result=%v\n", e.Floor, btn_floor, e.Dirn, btn_type, result)
         return result
     default:
         fmt.Printf("Default case: false\n")
@@ -141,10 +141,24 @@ func ClearAtCurrentFloor(e Elevator) Elevator{
 				e.Requests[e.Floor][b] = false
 			}
 		case CRV_InDirn:
-			for b := 0; b < NumButtons; b++ {
-				if e.Dirn == elevio.MD_Up && elevio.ButtonType(b) == elevio.BT_HallUp || e.Dirn == elevio.MD_Down && elevio.ButtonType(b) == elevio.BT_HallDown || elevio.ButtonType(b) == elevio.BT_Cab {
-					e.Requests[e.Floor][b] = false
+			e.Requests[e.Floor][elevio.BT_Cab] = false
+			switch e.Dirn {
+			case elevio.MD_Up:
+				if !requestsAbove(e) && !e.Requests[e.Floor][elevio.BT_HallUp] {
+					e.Requests[e.Floor][elevio.BT_HallDown] = false
 				}
+				e.Requests[e.Floor][elevio.BT_HallUp] = false
+	
+			case elevio.MD_Down:
+				if !requestsBelow(e) && !e.Requests[e.Floor][elevio.BT_HallDown] {
+					e.Requests[e.Floor][elevio.BT_HallUp] = false
+				}
+				e.Requests[e.Floor][elevio.BT_HallDown] = false
+	
+			case elevio.MD_Stop:
+			default:
+				e.Requests[e.Floor][elevio.BT_HallUp] = false
+				e.Requests[e.Floor][elevio.BT_HallDown] = false
 			}
 	}
 	return e
