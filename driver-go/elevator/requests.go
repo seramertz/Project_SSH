@@ -74,13 +74,14 @@ func requestsChooseDirection(e Elevator) DirnBehaviourPair{
 			return DirnBehaviourPair{Direction: elevio.MD_Down, Behaviour: EB_moving}
 		}	
 		if requestsHere(e) {
+			fmt.Printf("Requests here\n")
 			return DirnBehaviourPair{Direction: elevio.MD_Stop, Behaviour: EB_doorOpen}
 		}
 		return DirnBehaviourPair{Direction: elevio.MD_Stop, Behaviour: EB_idle}
 		
-		default:
-			return DirnBehaviourPair{Direction: elevio.MD_Stop, Behaviour: EB_idle}
-		}
+	default:
+		return DirnBehaviourPair{Direction: elevio.MD_Stop, Behaviour: EB_idle}
+	}
 		
 }
 func requestsShouldStop(e Elevator) bool {

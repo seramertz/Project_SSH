@@ -11,7 +11,12 @@ var elevator Elevator
 func FsmInit(numFloors int) {
 	elevator = ElevatorUnIntialized()
 	elevio.Init("localhost:15657", numFloors)
-	elevio.SetMotorDirection(elevio.MD_Stop)
+	if(elevator.Floor == -1){
+		elevio.SetMotorDirection(elevio.MD_Down)
+		elevator.Behaviour = EB_moving
+	}else{
+		elevio.SetMotorDirection(elevio.MD_Stop)
+	}
 }
 
 func setAllLights() {
@@ -29,15 +34,28 @@ func setFloorIndicator() {
 func FsmRequestsButtonPress(btnFloor int, btnType elevio.ButtonType) {
 	fmt.Printf("\n\n%s(%d, %d)\n", btnType, btnFloor, elevator.Floor)
 	ElevatorPrint(elevator)
-	
+
 	switch elevator.Behaviour {
 	case EB_doorOpen:
 		fmt.Printf("im in dooropen")
 		if requestsShouldClearImmediately(elevator, btnFloor, btnType) {
 			fmt.Printf("im in dooropen -> requestsshouldclear")
-			//elevator = ClearAtCurrentFloor(elevator)
+			elevator = ClearAtCurrentFloor(elevator)
 			TimerStart(time.Duration(elevator.Config.DoorOpenDuration) * time.Second)
+			
+			if TimerTimeOut(){
+				fmt.Printf("im in dooropen -> requestsshouldclear -> timeout")
+				elevio.SetDoorOpenLamp(false)
+			fmt.Printf("help")
+			elevator = ClearAtCurrentFloor(elevator)
+			if !requestsShouldStop(elevator){
+				elevator.Behaviour = EB_moving
+			}else{
+				elevator.Behaviour = EB_idle
+			}
+			}
 		} else {
+			fmt.Printf("im in dooropen -> requestsshouldNOTclear")
 			elevator.Requests[btnFloor][btnType] = true
 		}
 	case EB_moving:
@@ -79,10 +97,10 @@ func FsmFloorArrival(newFloor int) {
 	case EB_moving:
 		if requestsShouldStop(elevator) {
 			fmt.Printf("im in fsmFloorArrival -> requestsshouldstop")
-			elevio.SetMotorDirection(elevio.MD_Stop)
-			elevio.SetDoorOpenLamp(true)
-			elevator = ClearAtCurrentFloor(elevator)
-			TimerStart(time.Duration(elevator.Config.DoorOpenDuration) * time.Second)
+			//elevio.SetMotorDirection(elevio.MD_Stop)
+			//elevio.SetDoorOpenLamp(true)
+			//elevator = ClearAtCurrentFloor(elevator)
+			//TimerStart(time.Duration(elevator.Config.DoorOpenDuration) * time.Second)
 			setAllLights()
 			elevator.Behaviour = EB_doorOpen
 		}
