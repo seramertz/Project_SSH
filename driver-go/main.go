@@ -1,86 +1,40 @@
 package main
 
-import "Driver-go/elevio"
-import "Driver-go/elevator"
-import "fmt"
-import "time"
+import (
+	"Driver-go/elevator"
+	"Driver-go/elevio"
+	"Driver-go/fsm"
+)
+
 
 func main() {
 
+	/*
+	var port string
+	flag.StringVar(&port, "port", "", "port of this peer")
+	var id string
+	flag.StringVar(&id, "id", "", "id of this peer")
+	flag.Parse()
+
+	elevio.Init("localhost:"+port, 4)
+	*/
+
 	numFloors := 4
-	pollRate := 20 * time.Millisecond
+	elevio.Init("localhost: 15657", numFloors)
 
-	//elevio.Init("localhost:15657", numFloors)
+	ch_newLocalOrder := make(chan elevio.ButtonEvent, 100)
+	ch_clearLocalHallOrders := make(chan bool)
+	ch_orderToLocal := make(chan elevio.ButtonEvent, 100)
+	ch_newLocalState := make(chan elevator.Elevator, 100)
+	ch_arrivedAtFloors := make(chan int)
+	ch_obstruction := make(chan bool, 1)
+	ch_timerDoor := make(chan bool)
 
-	//var d elevio.MotorDirection = elevio.MD_Up
-	//elevio.SetMotorDirection(d)
-	elevator.FsmInit(numFloors)
+	go elevio.PollFloorSensor(ch_arrivedAtFloors)
+	go elevio.PollObstructionSwitch(ch_obstruction)
+	go elevio.PollButtons(ch_newLocalOrder)
 
-	prevRequestButtonPress := make([][]int, numFloors)
+	go fsm.Fsm(ch_orderToLocal, ch_newLocalState, ch_clearLocalHallOrders, ch_arrivedAtFloors, ch_obstruction, ch_timerDoor)
 
-	for i := range prevRequestButtonPress {
-		prevRequestButtonPress[i] = make([]int, elevator.NumButtons)
-	}
-
-	prevFloorSensor := -1
-
-	drv_buttons := make(chan elevio.ButtonEvent)
-	drv_floors := make(chan int)
-	drv_obstr := make(chan bool)
-	drv_stop := make(chan bool)
-
-	go elevio.PollButtons(drv_buttons)
-	go elevio.PollFloorSensor(drv_floors)
-	go elevio.PollObstructionSwitch(drv_obstr)
-	go elevio.PollStopButton(drv_stop)
-
-	dirn := elevio.MD_Up
-
-	for {
-        
-		select {
-		case buttonPressed := <-drv_buttons:
-			fmt.Printf("buttonPressed: \n", buttonPressed)
-			elevio.SetButtonLamp(buttonPressed.Button, buttonPressed.Floor, true)
-			elevator.FsmRequestsButtonPress(buttonPressed.Floor, buttonPressed.Button)
-			
-		case floorSensor := <-drv_floors:
-			fmt.Printf("floorSensor: \n", floorSensor)
-			if floorSensor == numFloors-1 {
-				dirn = elevio.MD_Down
-			} else if floorSensor == 0 {
-				dirn = elevio.MD_Up
-			}
-			elevio.SetMotorDirection(dirn)
-			if floorSensor != -prevFloorSensor {
-				elevator.FsmFloorArrival(floorSensor)
-			}
-			prevFloorSensor = floorSensor
-
-		case obstruction := <-drv_obstr:
-			fmt.Printf("obstruction: \n", obstruction)
-			if obstruction {
-				elevio.SetMotorDirection(elevio.MD_Stop)
-			} else {
-				elevio.SetMotorDirection(dirn)
-			}
-
-		case stopPressed := <-drv_stop:
-			fmt.Printf("stopPressed: \n", stopPressed)
-			for f := 0; f < numFloors; f++ {
-				for b := elevio.ButtonType(0); b < 3; b++ {
-					elevio.SetButtonLamp(b, f, false)
-				}
-			}
-		default:
-			select {
-			case <-time.After(pollRate):
-				elevator.FsmDoorTimeout()
-			default:
-				time.Sleep(pollRate)
-			}
-			time.Sleep(pollRate)
-		}
-	}
-    
+	select {}
 }

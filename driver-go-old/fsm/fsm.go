@@ -4,21 +4,21 @@ import (
 	"Driver-go/config"
 	"Driver-go/elevator"
 	"Driver-go/elevio"
-	"Driver-go/request"
-	"fmt"
+	"driver-go/config"
+	"driver-go/elevator"
+	"driver-go/elevio"
+	"driver-go/request"
 	"time"
 )
 
-func Fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.Elevator,ch_clearLocalHallOrders chan bool,
+func fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.Elevator,ch_clearLocalHallOrders chan bool,
 	ch_arrivedAtFloors chan int,ch_obstruction chan bool,ch_timerDoor chan bool){
 
-		elev := elevator.InitElevator()
-		e := &elev
-		
+		elevator := elevator.InitElevator()
+		e := &elevator
+
 		elevio.SetDoorOpenLamp(false)
 		elevio.SetMotorDirection(elevio.MD_Down)
-
-		elevator.ElevatorPrint(*e)
 
 		for{
 			floor := <-ch_arrivedAtFloors
@@ -34,13 +34,11 @@ func Fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.
 
 		doorTimer := time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)
 		timerUpdateState := time.NewTicker(time.Duration(config.StateUpdatePeriodsMs) * time.Millisecond)
-		
+
 		for{
-			fmt.Printf("in for loop")
 			elevator.LightsElevator(*e)
 			select{
 			case order := <-ch_orderChan:
-				fmt.Printf("in for order")
 				switch {
 					case e.Behave == elevator.DoorOpen:
 						if e.Floor == order.Floor{
@@ -59,7 +57,7 @@ func Fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.
 							ch_elevatorState <- *e
 						} else{
 							e.Requests[order.Floor][int(order.Button)] = true
-							request.RequestChooseDirection(e)
+							request.RequestOrder(e)
 							elevio.SetMotorDirection(e.Direction)
 							e.Behave = elevator.Moving
 							ch_elevatorState <- *e
@@ -67,11 +65,10 @@ func Fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.
 						}
 				}
 			case floor := <-ch_arrivedAtFloors:
-				fmt.Printf("in for floor")
 				e.Floor = floor
 				switch{
 					case e.Behave == elevator.Moving:
-						if request.RequestShouldStop(e){
+						if request.ShouldStop(e){
 							elevio.SetMotorDirection(elevio.MD_Stop)
 							elevator.LightsElevator(*e)
 							request.RequestClearAtCurrentFloor(e)
@@ -86,7 +83,6 @@ func Fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.
 					
 				}
 			case <-doorTimer.C:
-				fmt.Printf("in for in doortimer")
 				switch{
 					case e.Behave == elevator.DoorOpen:
 						request.RequestChooseDirection(e)
@@ -104,7 +100,6 @@ func Fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.
 						break
 				}
 			case <-ch_clearLocalHallOrders:
-				fmt.Printf("in for clear local hall orders")
 				request.RequestClearHall(e)
 			case obstruction := <-ch_obstruction:
 				if e.Behave == elevator.DoorOpen && obstruction{
@@ -114,6 +109,4 @@ func Fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.
 				ch_elevatorState <- *e
 				timerUpdateState.Reset(time.Duration(config.StateUpdatePeriodsMs) * time.Millisecond)
 				
-			}	
 	}
-}
