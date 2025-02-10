@@ -6,7 +6,6 @@ import (
 	"Driver-go/elevator"
 	"Driver-go/elevio"
 	"Driver-go/network/peers"
-	"Driver-go/request"
 	"time"
 )
 
@@ -31,17 +30,17 @@ func broadcast(elevators []*config.ElevatorDistributor, ch_transmit chan <- []co
 	time.Sleep(50*time.Millisecond)
 }
 
-func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLocalState chan elevator.Elevator, ch_msgFromNetwork chan []config.ElevatorDistributer, ch_msgToNetwork chan []config.ElevatorDistributer, ch_orderToLocal chan elevio.ButtonEvent, ch_peerUpdate chan peers.PeerUpdate, ch_watchdogStuckReset bool , ch_watchdogStuckSignal chan bool, ch_clearLocalHallOrders chan bool){
-	elevators := make([]*config.ElevatorDistributer, 0)
-	thisElevator := new(config.ElevatorDistributer)
+func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLocalState chan elevator.Elevator, ch_msgFromNetwork chan []config.ElevatorDistributor, ch_msgToNetwork chan []config.ElevatorDistributor, ch_orderToLocal chan elevio.ButtonEvent, ch_peerUpdate chan peers.PeerUpdate, ch_watchdogStuckReset chan bool , ch_watchdogStuckSignal chan bool, ch_clearLocalHallOrders chan bool){
+	elevators := make([]*config.ElevatorDistributor, 0)
+	thisElevator := new(config.ElevatorDistributor)
 	*thisElevator = elevatorDistributorInit(id)
 	elevators = append(elevators, thisElevator)
 
 	connectTimer := time.NewTimer(time.Duration(config.ReconnectTimer)*time.Second)
 	select{
 	case newElevators := <- ch_msgFromNetwork:
-		for _, elevator := range newElevators{
-			if elev.id == elevators[localElevator].ID{
+		for _, elev := range newElevators{
+			if elev.ID == elevators[localElevator].ID{
 				for floor := range elev.Requests{
 					if elev.Requests[floor][config.Cab] == config.Confirmed || elev.Requests[floor][config.Cab] == config.Order{
 						ch_newLocalOrder <- elevio.ButtonEvent{Floor: floor, Button: elevio.ButtonType(int(config.Cab))}
@@ -65,9 +64,9 @@ func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLoca
 			}
 			broadcast(elevators, ch_msgToNetwork)
 			setHallLights(elevators)
-		case newState := ch-newLocalState:
+		case newState := <- ch_newLocalState:
 			if newState.Floor != elevators[localElevator].Floor || newState.Behave == elevator.Idle || newState.Behave == elevator.DoorOpen{
-				elevators[localElevator].Behave = config.Behvaiour(int(newState.Behave))
+				elevators[localElevator].Behaviour = config.Behaviour(int(newState.Behave))
 				elevators[localElevator].Floor = newState.Floor
 				elevators[localElevator].Direction = config.Direction(int(newState.Direction))
 				ch_watchdogStuckReset <- false
@@ -77,7 +76,7 @@ func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLoca
 					if !newState.Requests[floor][button] && elevators[config.LocalElevator].Requests[floor][button] == config.Confirmed{
 						elevators[config.LocalElevator].Requests[floor][button] = config.Complete
 					}
-					if elevators[config.LocalElevator].Behave != config.Unavailable && newState.Requests[floor][button] && elevators[config.LocalElevator].Requests[floor][button] != config.Confirmed{
+					if elevators[config.LocalElevator].Behaviour != config.Unavailable && newState.Requests[floor][button] && elevators[config.LocalElevator].Requests[floor][button] != config.Confirmed{
 						elevators[config.LocalElevator].Requests[floor][button] = config.Confirmed
 					}
 				}
@@ -88,7 +87,7 @@ func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLoca
 			removeCompletedOrders(elevators)
 			
 		case newElevators := <- ch_msgFromNetwork:
-			updateElevators(elevators,newElevator)
+			updateElevators(elevators,newElevators)
 			assigner.ReassignOrders(elevators, ch_newLocalOrder)
 			for _, newElev := range newElevators{
 				elevExists := false
@@ -102,7 +101,7 @@ func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLoca
 					addNewElevator(&elevators,newElev)
 				}
 			}
-			extractNewOrder := confirmNewOrder(elevators[localElevator])
+			extractNewOrder := confirmedNewOrder(elevators[localElevator])
 			setHallLights(elevators)
 			removeCompletedOrders(elevators)
 			if extractNewOrder != nil{
@@ -131,7 +130,7 @@ func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLoca
 			setHallLights(elevators)
 			broadcast(elevators, ch_msgToNetwork)
 		case <- ch_watchdogStuckSignal:
-			elevators[localElevator].Behave = config.Unavailable
+			elevators[localElevator].Behaviour = config.Unavailable
 			broadcast(elevators, ch_msgToNetwork)
 			for floor := range elevators[localElevator].Requests{
 				for button := 0; button < len(elevators[localElevator].Requests[floor])-1;button++{
@@ -182,7 +181,7 @@ func updateElevators(elevators []*config.ElevatorDistributor, newElevators []con
 						}
 						elev.Floor = newElevators[localElevator].Floor
 						elev.Direction = newElevators[localElevator].Direction
-						elev.Behave = newElevators[localElevator].Behave
+						elev.Behaviour = newElevators[localElevator].Behaviour
 					}
 				}
 			}
@@ -191,7 +190,7 @@ func updateElevators(elevators []*config.ElevatorDistributor, newElevators []con
 			if newElev.ID == elevators[localElevator].ID{
 				for floor := range newElev.Requests{
 					for button := range newElev.Requests[floor]{
-						if elevators[localElevator].Behave != config.Unavailable{
+						if elevators[localElevator].Behaviour != config.Unavailable{
 							if newElev.Requests[floor][button] == config.Order {
 								(*elevators[localElevator]).Requests[floor][button] = config.Order
 							}
@@ -204,10 +203,10 @@ func updateElevators(elevators []*config.ElevatorDistributor, newElevators []con
 }
 
 
-func addNewElevator (elevators *[] config.ElevatorDistributor, newElevator config.ElevatorDistributor) {
+func addNewElevator (elevators *[]* config.ElevatorDistributor, newElevator config.ElevatorDistributor) {
 	tempElev := new(config.ElevatorDistributor)
 	*tempElev = elevatorDistributorInit(newElevator.ID)
-	(*tempElev).Behave = newElevator.Behave
+	(*tempElev).Behaviour = newElevator.Behaviour
 	(*tempElev).Direction = newElevator.Direction
 	(*tempElev).Floor = newElevator.Floor
 	

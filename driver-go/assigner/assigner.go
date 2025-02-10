@@ -4,7 +4,6 @@ import (
 	"Driver-go/config"
 	"Driver-go/assigner/cost"
 	"Driver-go/elevio"
-	"Driver-go/elevator"
 	"strconv"
 )
 

@@ -29,8 +29,8 @@ func main() {
 
 	// Distributor channels
 	ch_newLocalOrder := make(chan elevio.ButtonEvent, 100)
-	ch_msgFromNetwork := make(chan []config.DistributorElevator, 100)
-	ch_msgToNetwork := make(chan []config.DistributorElevator, 100)
+	ch_msgFromNetwork := make(chan []config.ElevatorDistributor, 100)
+	ch_msgToNetwork := make(chan []config.ElevatorDistributor, 100)
 	ch_peerUpdate := make(chan peers.PeerUpdate)
 	ch_peerTxEnable := make(chan bool)
 

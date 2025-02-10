@@ -70,7 +70,7 @@ func requestsBelow(elev config.ElevatorDistributor) bool {
 	return false
 }
 
-func requestClearAtCurrentFloor(elev config.ElevatorDistributor){
+func requestClearAtCurrentFloor(elev *config.ElevatorDistributor){
 	elev.Requests[elev.Floor][int(elevio.BT_Cab)] = config.None
 	switch {
 	case elev.Direction  == config.Up:
