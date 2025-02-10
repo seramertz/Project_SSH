@@ -66,8 +66,78 @@ func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLoca
 			broadcast(elevators, ch_msgToNetwork)
 			setHallLights(elevators)
 		case newState := ch-newLocalState:
-			if newState.Floor != elevators[localElevator].Floor || newState.Behave == elevator.Idle || 
+			if newState.Floor != elevators[localElevator].Floor || newState.Behave == elevator.Idle || newState.Behave == elevator.DoorOpen{
+				elevators[localElevator].Behave = config.Behvaiour(int(newState.Behave))
+				elevators[localElevator].Floor = newState.Floor
+				elevators[localElevator].Direction = config.Direction(int(newState.Direction))
+				ch_watchdogStuckReset <- false
+			}
+			for floor := range elevators[config.LocalElevator].Requests{
+				for button := range elevators[config.LocalElevator].Requests[floor]{
+					if !newState.Requests[floor][button] && elevators[config.LocalElevator].Requests[floor][button] == config.Confirmed{
+						elevators[config.LocalElevator].Requests[floor][button] = config.Complete
+					}
+					if elevators[config.LocalElevator].Behave != config.Unavailable && newState.Requests[floor][button] && elevators[config.LocalElevator].Requests[floor][button] != config.Confirmed{
+						elevators[config.LocalElevator].Requests[floor][button] = config.Confirmed
+					}
+				}
 				
+			}
+			setHallLights(elevators)
+			broadcast(elevators, ch_msgToNetwork)
+			removeCompletedOrders(elevators)
+			
+		case newElevators := <- ch_msgFromNetwork:
+			updateElevators(elevators,newElevator)
+			assigner.ReassignOrders(elevators, ch_newLocalOrder)
+			for _, newElev := range newElevators{
+				elevExists := false
+				for _, elev := range elevators{
+					if elev.ID == newElev.ID{
+						elevExists = true
+						break
+					}
+				}
+				if !elevExists{
+					addNewElevator(&elevators,newElev)
+				}
+			}
+			extractNewOrder := confirmNewOrder(elevators[localElevator])
+			setHallLights(elevators)
+			removeCompletedOrders(elevators)
+			if extractNewOrder != nil{
+				tempOrder := elevio.ButtonEvent{
+					Button : elevio.ButtonType(extractNewOrder.Button),
+					Floor : extractNewOrder.Floor}
+				ch_orderToLocal <- tempOrder
+				broadcast(elevators, ch_msgToNetwork)
+				}
+			case peer := <- ch_peerUpdate:
+				if len(peer.Lost) != 0{
+					for _, stringLostId := range peer.Lost{
+						for _,elev := range elevators {
+							if stringLostId == elev.ID{
+								elev.Behaviour = config.Unavailable
+							}
+							assigner.ReassignOrders(elevators, ch_newLocalOrder)
+							for floor := range elev.Requests{
+								for button := 0; button < len(elev.Requests[floor])-1 ; button++{
+									elev.Requests[floor][button] = config.None
+								}
+							}
+						}
+					}
+				}
+				setHallLights(elevators)
+				broadcast(elevators, ch_msgToNetwork)
+			case <- ch_watchdogStuckSignal:
+				elevators[localElevator].Behave = config.Unavailable
+				broadcast(elevators, ch_msgToNetwork)
+				for floor := range elevators[localNetwork].Requests{
+					for button := 0; button < len(elevators[localElevator].Requests[floor])-1;button++{
+						
+					}
+				}
 			}
 	}
 	
