@@ -148,7 +148,9 @@ func removeCompletedOrders(elevators []*config.ElevatorDistributor){
 	for _, elev := range elevators{
 		for floor := range elev.Requests{
 			for button := range elev.Requests[floor]{
-				if elev.Requests[floor][button] = config.None
+				if elev.Requests[floor][button] == config.Complete{
+					elev.Requests[floor][button] = config.None
+				}
 			}
 		}
 	}
@@ -223,7 +225,7 @@ func confirmedNewOrder(elev *config.ElevatorDistributor) *config.Requests{
 	for floor := range elev.Requests {
 		for button := 0 ; button < len(elev.Requests[floor]); button++{
 			if elev.Requests[floor][button] == config.Order{
-				elev.Requests[floor][button] = config.Comfirmed 
+				elev.Requests[floor][button] = config.Confirmed 
 				tempOrder := new(config.Requests)
 				*tempOrder = config.Requests{
 					Floor: floor,
@@ -232,9 +234,9 @@ func confirmedNewOrder(elev *config.ElevatorDistributor) *config.Requests{
 				}
 			}
 		}
+		return nil
 	}
-	return nil
-}
+	
 
 func setHallLights(elevators []*config.ElevatorDistributor) {
 	for button := 0 ; button < config.NumButtons - 1 ; button++{
