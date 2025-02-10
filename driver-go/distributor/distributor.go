@@ -31,7 +31,18 @@ func broadcast(elevators []*config.ElevatorDistributor, ch_transmit chan <- []co
 }
 
 //distribuing orders among the elevators
-func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLocalState chan elevator.Elevator, ch_msgFromNetwork chan []config.ElevatorDistributor, ch_msgToNetwork chan []config.ElevatorDistributor, ch_orderToLocal chan elevio.ButtonEvent, ch_peerUpdate chan peers.PeerUpdate, ch_watchdogStuckReset chan bool , ch_watchdogStuckSignal chan bool, ch_clearLocalHallOrders chan bool){
+func Distributor(
+	id string,
+	ch_newLocalOrder chan elevio.ButtonEvent,
+	ch_newLocalState chan elevator.Elevator, 
+	ch_msgFromNetwork chan []config.ElevatorDistributor, 
+	ch_msgToNetwork chan []config.ElevatorDistributor, 
+	ch_orderToLocal chan elevio.ButtonEvent, 
+	ch_peerUpdate chan peers.PeerUpdate, 
+	ch_watchdogStuckReset chan bool , 
+	ch_watchdogStuckSignal chan bool, 
+	ch_clearLocalHallOrders chan bool){
+
 	elevators := make([]*config.ElevatorDistributor, 0)
 	thisElevator := new(config.ElevatorDistributor)
 	*thisElevator = elevatorDistributorInit(id)
@@ -39,7 +50,7 @@ func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLoca
 
 	connectTimer := time.NewTimer(time.Duration(config.ReconnectTimer)*time.Second)
 
-	//check the network for new elevators, 
+	//check the network for new elevators, handles receiving the new elevators states
 	select{
 	case newElevators := <- ch_msgFromNetwork:
 		for _, elev := range newElevators{
@@ -55,6 +66,8 @@ func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLoca
 	case <- connectTimer.C:
 		break
 	}
+
+	//Distributes orders among the elevators on the network
 	for{
 		select{
 		case newOrder := <- ch_newLocalOrder:
@@ -146,6 +159,7 @@ func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLoca
 	}
 }
 
+
 func removeCompletedOrders(elevators []*config.ElevatorDistributor){
 	for _, elev := range elevators{
 		for floor := range elev.Requests{
@@ -158,7 +172,8 @@ func removeCompletedOrders(elevators []*config.ElevatorDistributor){
 	}
 }
 
-func chechLocalOrderComplete(elev *config.ElevatorDistributor, localElev elevator.Elevator){
+/*
+func checkLocalOrderComplete(elev *config.ElevatorDistributor, localElev elevator.Elevator){
 	for floor := range elev.Requests{
 		for button := range elev.Requests[floor]{
 			if !localElev.Requests[floor][button] && elev.Requests[floor][button] == config.Confirmed{
@@ -171,7 +186,7 @@ func chechLocalOrderComplete(elev *config.ElevatorDistributor, localElev elevato
 		}
 	}
 }
-
+*/
 
 func updateElevators(elevators []*config.ElevatorDistributor, newElevators []config.ElevatorDistributor){
 	if elevators[localElevator].ID != newElevators[localElevator].ID{
