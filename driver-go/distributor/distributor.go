@@ -30,6 +30,7 @@ func broadcast(elevators []*config.ElevatorDistributor, ch_transmit chan <- []co
 	time.Sleep(50*time.Millisecond)
 }
 
+//distribuing orders among the elevators
 func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLocalState chan elevator.Elevator, ch_msgFromNetwork chan []config.ElevatorDistributor, ch_msgToNetwork chan []config.ElevatorDistributor, ch_orderToLocal chan elevio.ButtonEvent, ch_peerUpdate chan peers.PeerUpdate, ch_watchdogStuckReset chan bool , ch_watchdogStuckSignal chan bool, ch_clearLocalHallOrders chan bool){
 	elevators := make([]*config.ElevatorDistributor, 0)
 	thisElevator := new(config.ElevatorDistributor)
@@ -37,6 +38,8 @@ func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLoca
 	elevators = append(elevators, thisElevator)
 
 	connectTimer := time.NewTimer(time.Duration(config.ReconnectTimer)*time.Second)
+
+	//check the network for new elevators, 
 	select{
 	case newElevators := <- ch_msgFromNetwork:
 		for _, elev := range newElevators{

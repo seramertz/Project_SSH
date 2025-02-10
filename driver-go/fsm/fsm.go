@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+//Statemachine for running the main elevator
 func Fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.Elevator,ch_clearLocalHallOrders chan bool,
 	ch_arrivedAtFloors chan int,ch_obstruction chan bool,ch_timerDoor chan bool){
 
@@ -20,6 +21,7 @@ func Fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.
 
 		elevator.ElevatorPrint(*e)
 
+		//Initialize at floor zero
 		for{
 			floor := <-ch_arrivedAtFloors
 			if floor != 0{
@@ -35,11 +37,12 @@ func Fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.
 		doorTimer := time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)
 		timerUpdateState := time.NewTicker(time.Duration(config.StateUpdatePeriodsMs) * time.Millisecond)
 		
+		//Statemachine defining the elevators state
 		for{
 			fmt.Printf("in for loop")
 			elevator.LightsElevator(*e)
 			select{
-			case order := <-ch_orderChan:
+			case order := <-ch_orderChan: //an order is placed
 				fmt.Printf("in for order")
 				switch {
 					case e.Behave == elevator.DoorOpen:
@@ -66,7 +69,7 @@ func Fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.
 							break
 						}
 				}
-			case floor := <-ch_arrivedAtFloors:
+			case floor := <-ch_arrivedAtFloors: //elevator has reached a floor
 				fmt.Printf("in for floor")
 				e.Floor = floor
 				switch{
@@ -85,7 +88,7 @@ func Fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.
 					break
 					
 				}
-			case <-doorTimer.C:
+			case <-doorTimer.C: //door is open and timer is counting
 				fmt.Printf("in for in doortimer")
 				switch{
 					case e.Behave == elevator.DoorOpen:
@@ -103,14 +106,14 @@ func Fsm(ch_orderChan chan elevio.ButtonEvent,ch_elevatorState chan <- elevator.
 					default:	
 						break
 				}
-			case <-ch_clearLocalHallOrders:
+			case <-ch_clearLocalHallOrders: //delete the hallorders of this elevator
 				fmt.Printf("in for clear local hall orders")
 				request.RequestClearHall(e)
-			case obstruction := <-ch_obstruction:
+			case obstruction := <-ch_obstruction: //obstruction button 
 				if e.Behave == elevator.DoorOpen && obstruction{
 					doorTimer.Reset(time.Duration(config.DoorOpenDuration) * time.Second)
 				}
-			case <-timerUpdateState.C:
+			case <-timerUpdateState.C: //if the time is out
 				ch_elevatorState <- *e
 				timerUpdateState.Reset(time.Duration(config.StateUpdatePeriodsMs) * time.Millisecond)
 				

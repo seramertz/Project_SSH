@@ -6,6 +6,7 @@ import (
 	"Driver-go/elevio"
 )
 
+
 func RequestAbove(e elevator.Elevator) bool{
 	for floor := e.Floor+1; floor < config.NumFloors; floor++{
 		for button := 0; button < config.NumButtons; button++{
@@ -28,6 +29,7 @@ func RequestBelow(e elevator.Elevator)bool {
 	return false
 }
 
+//Clears the requests at the current floor going in the same direction
 func RequestClearAtCurrentFloor(e *elevator.Elevator){
 	e.Requests[e.Floor][int(elevio.BT_Cab)] = false
 	switch{
@@ -44,6 +46,7 @@ func RequestClearAtCurrentFloor(e *elevator.Elevator){
 	}
 }
 
+//Stop based on current floor and direction
 func RequestShouldStop(e *elevator.Elevator)bool {
 	switch{
 	case e.Direction == elevio.MD_Down:
@@ -55,6 +58,7 @@ func RequestShouldStop(e *elevator.Elevator)bool {
 	}
 }
 
+//Chooses direction based on the the requests made 
 func RequestChooseDirection(e *elevator.Elevator){
 	switch e.Direction{
 	case elevio.MD_Up:
@@ -79,6 +83,8 @@ func RequestChooseDirection(e *elevator.Elevator){
 	}
 
 }
+
+
 
 func RequestClearHall(e *elevator.Elevator){
 	for floor := 0; floor < config.NumFloors; floor++{

@@ -21,7 +21,7 @@ func main() {
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
 	flag.Parse()
-
+	
 	numFloors := 4
 	elevio.Init("localhost: 15657", numFloors)
 
