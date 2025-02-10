@@ -2,8 +2,7 @@ package elevator
 
 import (
 	"Driver-go/elevio"
-	"driver-go/config"
-	"driver-go/elevio"
+	"Driver-go/config"
 )
 
 
