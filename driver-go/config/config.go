@@ -47,7 +47,7 @@ type Requests struct{
 	Button ButtonType
 }
 
-/*
+
 type ElevatorDistributer struct{
 	ID string
 	Floor int
@@ -62,4 +62,3 @@ type CostRequest struct{
 	AssignedID string
 	Request Requests
 }
-	*/
