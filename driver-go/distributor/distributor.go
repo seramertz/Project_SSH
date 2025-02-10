@@ -180,7 +180,7 @@ func updateElevators(elevators []*config.ElevatorDistributer, newElevators []con
 						}
 						elev.Floor = newElevators[localElevator].Floor
 						elev.Direction = newElevators[localElevator].Direction
-						elev.Behaviour = newElevators[localElevator].Behaviour
+						elev.Behave = newElevators[localElevator].Behave
 					}
 				}
 			}
@@ -189,7 +189,7 @@ func updateElevators(elevators []*config.ElevatorDistributer, newElevators []con
 			if newElev.ID == elevators[localElevator].ID{
 				for floor := range newElev.Requests{
 					for button := range newElev.Requests[floor]{
-						if elevators[localElevator].Behaviour != config.Unavailable{
+						if elevators[localElevator].Behave != config.Unavailable{
 							if newElev.Requests[floor][button] == config.Order {
 								(*elevators[localElevator]).Requests[floor][button] = config.Order
 							}
@@ -197,6 +197,55 @@ func updateElevators(elevators []*config.ElevatorDistributer, newElevators []con
 					}
 				}
 			}
+		}
+	}
+}
+
+
+func addNewElevator (elevators *[] config.ElevatorDistributer, newElevator config.ElevatorDistributer) {
+	tempElev := new(config.ElevatorDistributer)
+	*tempElev = elevatorDistributorInit(newElevator.ID)
+	(*tempElev).Behave = newElevator.Behave
+	(*tempElev).Direction = newElevator.Direction
+	(*tempElev).Floor = newElevator.Floor
+	
+	for floor := range tempElev.Requests{
+		for button := range tempElev.Requests[floor]{
+			tempElev.Requests[floor][button] = newElevator.Requests[floor][button]
+		}
+	}
+	*elevators = append(*elevators, tempElev)
+}
+
+
+
+func confirmedNewOrder(elev *config.ElevatorDistributer) *config.Requests{
+	for floor := range elev.Requests {
+		for button := 0 ; button < len(elev.Requests[floor]); button++{
+			if elev.Requests[floor][button] == config.Order{
+				elev.Requests[floor][button] = config.Comfirmed 
+				tempOrder := new(config.Requests)
+				*tempOrder = config.Requests{
+					Floor: floor,
+					Button: config.ButtonType(button)}
+					return tempOrder
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func setHallLights(elevators []*config.ElevatorDistributer) {
+	for button := 0 ; button < config.NumButtons - 1 ; button++{
+		for floor := 0 ; floor < config.NumFloors ; floor++{
+			isLight := false
+			for _, elev := range elevators{
+				if elev.Requests[floor][button] == config.Confirmed{
+					isLight = true
+				}
+			}
+			elevio.SetButtonLamp(elevio.ButtonType(button), floor, isLight)
 		}
 	}
 }
