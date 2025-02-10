@@ -12,18 +12,18 @@ import (
 
 const localElevator = 0
 
-func elevatorDistributorInit(id string) config.ElevatorDistributer{
+func elevatorDistributorInit(id string) config.ElevatorDistributor{
 	requests := make([][]config.RequestState, 4)
 	for floor := range requests{
 		requests[floor] = make([]config.RequestState, 3)
 		
 	}
-	return config.ElevatorDistributer{Requests: requests, ID: id, Floor:0, Behaviour: config.Idle}
+	return config.ElevatorDistributor{Requests: requests, ID: id, Floor:0, Behaviour: config.Idle}
 
 }
 
-func broadcast(elevators []*config.ElevatorDistributer, ch_transmit chan <- []config.ElevatorDistributer){
-	temporaryElevators := make([]config.ElevatorDistributer, 0)
+func broadcast(elevators []*config.ElevatorDistributor, ch_transmit chan <- []config.ElevatorDistributor){
+	temporaryElevators := make([]config.ElevatorDistributor, 0)
 	for _, elevator := range elevators{
 		temporaryElevators = append(temporaryElevators, *elevator)
 	}
@@ -31,9 +31,9 @@ func broadcast(elevators []*config.ElevatorDistributer, ch_transmit chan <- []co
 	time.Sleep(50*time.Millisecond)
 }
 
-func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLocalState chan elevator.Elevator, ch_msgFromNetwork chan []config.ElevatorDistributer, ch_msgToNetwork chan []config.ElevatorDistributer, ch_orderToLocal chan elevio.ButtonEvent, ch_peerUpdate chan peers.PeerUpdate, ch_watchdogStuckReset bool , ch_watchdogStuckSignal chan bool, ch_clearLocalHallOrders chan bool){
-	elevators := make([]*config.ElevatorDistributer, 0)
-	thisElevator := new(config.ElevatorDistributer)
+func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLocalState chan elevator.Elevator, ch_msgFromNetwork chan []config.ElevatorDistributor, ch_msgToNetwork chan []config.ElevatorDistributor, ch_orderToLocal chan elevio.ButtonEvent, ch_peerUpdate chan peers.PeerUpdate, ch_watchdogStuckReset bool , ch_watchdogStuckSignal chan bool, ch_clearLocalHallOrders chan bool){
+	elevators := make([]*config.ElevatorDistributor, 0)
+	thisElevator := new(config.ElevatorDistributor)
 	*thisElevator = elevatorDistributorInit(id)
 	elevators = append(elevators, thisElevator)
 
@@ -144,7 +144,7 @@ func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLoca
 	}
 }
 
-func removeCompletedOrders(elevators []*config.ElevatorDistributer){
+func removeCompletedOrders(elevators []*config.ElevatorDistributor){
 	for _, elev := range elevators{
 		for floor := range elev.Requests{
 			for button := range elev.Requests[floor]{
@@ -154,7 +154,7 @@ func removeCompletedOrders(elevators []*config.ElevatorDistributer){
 	}
 }
 
-func chechLocalOrderComplete(elev *config.ElevatorDistributer, localElev elevator.Elevator){
+func chechLocalOrderComplete(elev *config.ElevatorDistributor, localElev elevator.Elevator){
 	for floor := range elev.Requests{
 		for button := range elev.Requests[floor]{
 			if !localElev.Requests[floor][button] && elev.Requests[floor][button] == config.Confirmed{
@@ -169,7 +169,7 @@ func chechLocalOrderComplete(elev *config.ElevatorDistributer, localElev elevato
 }
 
 
-func updateElevators(elevators []*config.ElevatorDistributer, newElevators []config.ElevatorDistributer){
+func updateElevators(elevators []*config.ElevatorDistributor, newElevators []config.ElevatorDistributor){
 	if elevators[localElevator].ID != newElevators[localElevator].ID{
 		for _,elev := range elevators{
 			if elev.ID == newElevators[localElevator].ID{
@@ -202,8 +202,8 @@ func updateElevators(elevators []*config.ElevatorDistributer, newElevators []con
 }
 
 
-func addNewElevator (elevators *[] config.ElevatorDistributer, newElevator config.ElevatorDistributer) {
-	tempElev := new(config.ElevatorDistributer)
+func addNewElevator (elevators *[] config.ElevatorDistributor, newElevator config.ElevatorDistributor) {
+	tempElev := new(config.ElevatorDistributor)
 	*tempElev = elevatorDistributorInit(newElevator.ID)
 	(*tempElev).Behave = newElevator.Behave
 	(*tempElev).Direction = newElevator.Direction
@@ -219,7 +219,7 @@ func addNewElevator (elevators *[] config.ElevatorDistributer, newElevator confi
 
 
 
-func confirmedNewOrder(elev *config.ElevatorDistributer) *config.Requests{
+func confirmedNewOrder(elev *config.ElevatorDistributor) *config.Requests{
 	for floor := range elev.Requests {
 		for button := 0 ; button < len(elev.Requests[floor]); button++{
 			if elev.Requests[floor][button] == config.Order{
@@ -236,7 +236,7 @@ func confirmedNewOrder(elev *config.ElevatorDistributer) *config.Requests{
 	return nil
 }
 
-func setHallLights(elevators []*config.ElevatorDistributer) {
+func setHallLights(elevators []*config.ElevatorDistributor) {
 	for button := 0 ; button < config.NumButtons - 1 ; button++{
 		for floor := 0 ; floor < config.NumFloors ; floor++{
 			isLight := false
