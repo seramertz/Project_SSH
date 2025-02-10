@@ -48,7 +48,7 @@ type Requests struct{
 }
 
 
-type ElevatorDistributer struct{
+type ElevatorDistributor struct{
 	ID string
 	Floor int
 	Direction Direction

@@ -31,7 +31,7 @@ func broadcast(elevators []*config.ElevatorDistributer, ch_transmit chan <- []co
 	time.Sleep(50*time.Millisecond)
 }
 
-func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLocalState chan elevator.Elevator, ch_msgFromNetwork chan []config.ElevatorDistributer, ch_msgToNetwork chan []config.ElevatorDistributer, ch_orderToLocal chan elevio.ButtonEvent, ch_peerUpdate chan peers.PeerUpdate, ch_watchdogStuckReset bool , ch_watchdogStuckSignal chan bool, ch_clearLocalHallOrders chan bool){
+func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLocalState chan elevator.Elevator, ch_msgFromNetwork chan []config.ElevatorDistributer, ch_msgToNetwork chan []config.ElevatorDistributer, ch_orderToLocal chan elevio.ButtonEvent, ch_peerUpdate chan peers.PeerUpdate, ch_watchdogStuckReset chan bool , ch_watchdogStuckSignal chan bool, ch_clearLocalHallOrders chan bool){
 	elevators := make([]*config.ElevatorDistributer, 0)
 	thisElevator := new(config.ElevatorDistributer)
 	*thisElevator = elevatorDistributorInit(id)
@@ -144,7 +144,7 @@ func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLoca
 	}
 }
 
-func removeCompletedOrders(elevators []*config.ElevatorDistributer){
+func removeCompletedOrders(elevators []*config.ElevatorDistributor){
 	for _, elev := range elevators{
 		for floor := range elev.Requests{
 			for button := range elev.Requests[floor]{
