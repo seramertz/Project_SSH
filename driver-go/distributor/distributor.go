@@ -111,33 +111,92 @@ func Distributor(id string, ch_newLocalOrder chan elevio.ButtonEvent, ch_newLoca
 					Floor : extractNewOrder.Floor}
 				ch_orderToLocal <- tempOrder
 				broadcast(elevators, ch_msgToNetwork)
-				}
-			case peer := <- ch_peerUpdate:
-				if len(peer.Lost) != 0{
-					for _, stringLostId := range peer.Lost{
-						for _,elev := range elevators {
-							if stringLostId == elev.ID{
-								elev.Behaviour = config.Unavailable
-							}
-							assigner.ReassignOrders(elevators, ch_newLocalOrder)
-							for floor := range elev.Requests{
-								for button := 0; button < len(elev.Requests[floor])-1 ; button++{
-									elev.Requests[floor][button] = config.None
-								}
+			}
+		case peer := <- ch_peerUpdate:
+			if len(peer.Lost) != 0{
+				for _, stringLostId := range peer.Lost{
+					for _,elev := range elevators {
+						if stringLostId == elev.ID{
+							elev.Behaviour = config.Unavailable
+						}
+						assigner.ReassignOrders(elevators, ch_newLocalOrder)
+						for floor := range elev.Requests{
+							for button := 0; button < len(elev.Requests[floor])-1 ; button++{
+								elev.Requests[floor][button] = config.None
 							}
 						}
 					}
 				}
-				setHallLights(elevators)
-				broadcast(elevators, ch_msgToNetwork)
-			case <- ch_watchdogStuckSignal:
-				elevators[localElevator].Behave = config.Unavailable
-				broadcast(elevators, ch_msgToNetwork)
-				for floor := range elevators[localNetwork].Requests{
-					for button := 0; button < len(elevators[localElevator].Requests[floor])-1;button++{
-						
+			}
+			setHallLights(elevators)
+			broadcast(elevators, ch_msgToNetwork)
+		case <- ch_watchdogStuckSignal:
+			elevators[localElevator].Behave = config.Unavailable
+			broadcast(elevators, ch_msgToNetwork)
+			for floor := range elevators[localElevator].Requests{
+				for button := 0; button < len(elevators[localElevator].Requests[floor])-1;button++{
+					elevators[localElevator].Requests[floor][button] = config.None
+				}
+			}
+			setHallLights(elevators)
+			ch_clearLocalHallOrders <- true
+		}
+	}
+}
+
+func removeCompletedOrders(elevators []*config.ElevatorDistributer){
+	for _, elev := range elevators{
+		for floor := range elev.Requests{
+			for button := range elev.Requests[floor]{
+				if elev.Requests[floor][button] = config.None
+			}
+		}
+	}
+}
+
+func chechLocalOrderComplete(elev *config.ElevatorDistributer, localElev elevator.Elevator){
+	for floor := range elev.Requests{
+		for button := range elev.Requests[floor]{
+			if !localElev.Requests[floor][button] && elev.Requests[floor][button] == config.Confirmed{
+				elev.Requests[floor][button] = config.Complete
+
+			}
+			if localElev.Requests[floor][button] && elev.Requests[floor][button] != config.Confirmed && elev.Behaviour != config.Unavailable {
+				elev.Requests[floor][button] = config.Confirmed
+			}
+		}
+	}
+}
+
+
+func updateElevators(elevators []*config.ElevatorDistributer, newElevators []config.ElevatorDistributer){
+	if elevators[localElevator].ID != newElevators[localElevator].ID{
+		for _,elev := range elevators{
+			if elev.ID == newElevators[localElevator].ID{
+				for floor := range elev.Requests{
+					for button := range elev.Requests[floor]{
+						if !(elev.Requests[floor][button] == config.Confirmed && newElevators[localElevator].Requests[floor][button] == config.Order){
+							elev.Requests[floor][button] = newElevators[localElevator].Requests[floor][button]
+						}
+						elev.Floor = newElevators[localElevator].Floor
+						elev.Direction = newElevators[localElevator].Direction
+						elev.Behaviour = newElevators[localElevator].Behaviour
 					}
 				}
 			}
+		}
+		for _, newElev := range newElevators{
+			if newElev.ID == elevators[localElevator].ID{
+				for floor := range newElev.Requests{
+					for button := range newElev.Requests[floor]{
+						if elevators[localElevator].Behaviour != config.Unavailable{
+							if newElev.Requests[floor][button] == config.Order {
+								(*elevators[localElevator]).Requests[floor][button] = config.Order
+							}
+						}
+					}
+				}
+			}
+		}
 	}
-	
+}
