@@ -39,7 +39,7 @@ func main() {
 
 	// 'Local elevator' channels
 	ch_arrivedAtFloors := make(chan int)
-	ch_obstruction := make(chan bool, 1)
+	ch_obstruction := make(chan bool)
 	ch_timerDoor := make(chan bool)
 
 
@@ -48,6 +48,7 @@ func main() {
 	go elevio.PollObstructionSwitch(ch_obstruction)
 	go elevio.PollButtons(ch_newLocalOrder)
 
+	
 	go fsm.Fsm(ch_orderToLocal, ch_newLocalState, ch_clearLocalHallOrders, ch_arrivedAtFloors, ch_obstruction, ch_timerDoor)
 
 

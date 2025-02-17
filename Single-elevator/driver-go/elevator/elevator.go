@@ -31,6 +31,7 @@ func InitElevator() Elevator {
 			requests[floor][button] = false
 		}
 	}
+	
 	return Elevator{
 		Floor:      0,
 		Direction:  elevio.MD_Stop,
