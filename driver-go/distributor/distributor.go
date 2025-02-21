@@ -75,11 +75,11 @@ func Distributor(
 			if elevators[localElevator].Requests[newOrder.Floor][newOrder.Button] == config.Order{
 				broadcast(elevators, ch_msgToNetwork)
 				elevators[localElevator].Requests[newOrder.Floor][newOrder.Button] = config.Confirmed
-				setHallLights(elevators)
+				setAllLights(elevators)
 				ch_orderToLocal <- newOrder
 			}
 			broadcast(elevators, ch_msgToNetwork)
-			setHallLights(elevators)
+			setAllLights(elevators)
 		case newState := <- ch_newLocalState:
 			if newState.Floor != elevators[localElevator].Floor || newState.Behave == elevator.Idle || newState.Behave == elevator.DoorOpen{
 				elevators[localElevator].Behaviour = config.Behaviour(int(newState.Behave))
@@ -98,7 +98,7 @@ func Distributor(
 				}
 				
 			}
-			setHallLights(elevators)
+			setAllLights(elevators)
 			broadcast(elevators, ch_msgToNetwork)
 			removeCompletedOrders(elevators)
 			
@@ -118,7 +118,7 @@ func Distributor(
 				}
 			}
 			extractNewOrder := confirmedNewOrder(elevators[localElevator])
-			setHallLights(elevators)
+			setAllLights(elevators)
 			removeCompletedOrders(elevators)
 			if extractNewOrder != nil{
 				tempOrder := elevio.ButtonEvent{
@@ -143,7 +143,7 @@ func Distributor(
 					}
 				}
 			}
-			setHallLights(elevators)
+			setAllLights(elevators)
 			broadcast(elevators, ch_msgToNetwork)
 		case <- ch_watchdogStuckSignal:
 			elevators[localElevator].Behaviour = config.Unavailable
@@ -153,7 +153,7 @@ func Distributor(
 					elevators[localElevator].Requests[floor][button] = config.None
 				}
 			}
-			setHallLights(elevators)
+			setAllLights(elevators)
 			ch_clearLocalHallOrders <- true
 		}
 	}
@@ -255,8 +255,8 @@ func confirmedNewOrder(elev *config.ElevatorDistributor) *config.Requests{
 	}
 	
 
-func setHallLights(elevators []*config.ElevatorDistributor) {
-	for button := 0 ; button < config.NumButtons - 1 ; button++{
+func setAllLights(elevators []*config.ElevatorDistributor) {
+	for button := 0 ; button < config.NumButtons ; button++{
 		for floor := 0 ; floor < config.NumFloors ; floor++{
 			isLight := false
 			for _, elev := range elevators{
@@ -268,3 +268,4 @@ func setHallLights(elevators []*config.ElevatorDistributor) {
 		}
 	}
 }
+

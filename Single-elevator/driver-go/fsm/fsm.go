@@ -91,6 +91,7 @@ func Fsm(
 
 					// Handle obstruction if active
 					if obstructionActive {
+						elevator.LightsElevator(*e)
 						fmt.Printf("Obstruction detected: %v\n", obstructionActive)
 						doorTimer.Stop()
 						for obstructionActive {
@@ -138,6 +139,7 @@ func Fsm(
 
 					// Handle obstruction while door is open
 					for obstruction {
+						elevator.LightsElevator(*e)
 						obstruction = <-ch_obstruction
 					}
 				}

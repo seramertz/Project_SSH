@@ -42,6 +42,7 @@ func Fsm(
 		doorTimer := time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)
 		timerUpdateState := time.NewTicker(time.Duration(config.StateUpdatePeriodsMs) * time.Millisecond)
 		
+		obstructionActive := false
 		//Statemachine defining the elevators state
 		for{
 			fmt.Printf("in for loop")
@@ -87,7 +88,18 @@ func Fsm(
 							doorTimer.Reset(time.Duration(config.DoorOpenDuration) * time.Second)
 							e.Behave = elevator.DoorOpen
 							ch_elevatorState <- *e
-					
+							
+							// Handle obstruction if active
+							if obstructionActive {
+								elevator.LightsElevator(*e)
+								fmt.Printf("Obstruction detected: %v\n", obstructionActive)
+								doorTimer.Stop()
+								for obstructionActive {
+									obstructionActive = <-ch_obstruction
+								}
+								fmt.Printf("Obstruction cleared: %v\n", obstructionActive)
+								doorTimer = time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)
+							}
 						}
 				default:	
 					break
@@ -115,9 +127,23 @@ func Fsm(
 				fmt.Printf("in for clear local hall orders")
 				request.RequestClearHall(e)
 			case obstruction := <-ch_obstruction: //obstruction button 
-				if e.Behave == elevator.DoorOpen && obstruction{
+			if obstruction {
+				obstructionActive = true
+				if e.Behave == elevator.DoorOpen {
+					fmt.Printf("Obstruction detected: %v\n", obstruction)
 					doorTimer.Reset(time.Duration(config.DoorOpenDuration) * time.Second)
+
+					// Handle obstruction while door is open
+					for obstruction {
+						elevator.LightsElevator(*e)
+						obstruction = <-ch_obstruction
+					}
 				}
+			} else {
+				obstructionActive = false
+			}
+			fmt.Printf("Obstruction cleared: %v\n", obstruction)
+			doorTimer = time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)
 			case <-timerUpdateState.C: //if the time is out
 				ch_elevatorState <- *e
 				timerUpdateState.Reset(time.Duration(config.StateUpdatePeriodsMs) * time.Millisecond)

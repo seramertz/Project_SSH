@@ -72,6 +72,18 @@ func EDToString(dirn elevio.MotorDirection) string {
 	return "Unknown"
 }
 
+func EBtnToString(btn elevio.ButtonType) string{
+	switch btn{
+	case elevio.BT_HallUp:
+		return "Hall Up"
+	case elevio.BT_HallDown:
+		return "Hall down"
+	case elevio.BT_Cab:
+		return "Cab"
+	}
+	return "Unknown btn"
+}
+
 func ElevatorPrint(e Elevator){
 	fmt.Println(" +-----------------+")
 	fmt.Printf(
