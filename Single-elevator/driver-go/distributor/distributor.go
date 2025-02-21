@@ -93,7 +93,7 @@ func removeCompletedOrders(elev *config.ElevatorDistributor){
 	
 
 func setHallLights(elevator *config.ElevatorDistributor) {
-	for button := 0 ; button < config.NumButtons - 1 ; button++{
+	for button := 0 ; button < config.NumButtons ; button++{
 		for floor := 0 ; floor < config.NumFloors ; floor++{
 			isLight := false
 			
