@@ -22,21 +22,9 @@ func Fsm(
 		e := &elev
 		
 		elevio.SetDoorOpenLamp(false)
-		elevio.SetMotorDirection(elevio.MD_Down)
 
 		elevator.ElevatorPrint(*e)
 
-		//Initialize at floor zero
-		for{
-			floor := <-ch_arrivedAtFloors
-			if floor != 0{
-				elevio.SetMotorDirection(elevio.MD_Down)
-			} else{
-				elevio.SetMotorDirection((elevio.MD_Stop))
-				break
-			}
-		}
-		
 		ch_elevatorState <- *e
 
 		doorTimer := time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)

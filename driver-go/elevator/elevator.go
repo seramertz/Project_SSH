@@ -31,13 +31,18 @@ func InitElevator() Elevator {
 			requests[floor][button] = false
 		}
 	}
+	for (elevio.GetFloor() ==-1){
+		elevio.SetMotorDirection(elevio.MD_Down)
+	}
+	elevio.SetMotorDirection(elevio.MD_Stop)
 	return Elevator{
-		Floor:      0,
+		Floor:      elevio.GetFloor(),
 		Direction:  elevio.MD_Stop,
 		Requests:   requests,
 		Behave:     Idle,
 		TimerCount: 0}
-}
+}	
+
 
 // Set elevtor lights and floor indicators
 func LightsElevator(e Elevator) {
