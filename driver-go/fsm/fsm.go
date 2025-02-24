@@ -76,6 +76,7 @@ func Fsm(
 							ch_elevatorState <- *e
 							
 							
+							//Fix: Obstruction activated by itself????
 							// Handle obstruction if active
 							if obstructionActive {
 								fmt.Printf("Obstruction detected: %v\n", obstructionActive)
@@ -116,6 +117,8 @@ func Fsm(
 				
 				request.RequestClearHall(e)
 
+			
+			//Fix: Obstruction activates by itself?
 			case obstruction := <-ch_obstruction: //obstruction button 
 				if obstruction {
 					obstructionActive = true
