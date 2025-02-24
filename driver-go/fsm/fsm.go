@@ -76,7 +76,7 @@ func Fsm(
 							ch_elevatorState <- *e
 							
 							
-							//Fix: Obstruction activated by itself????
+							//Fix: Obstruction activated by itself???? Is it because of the shared variable? 
 							// Handle obstruction if active
 							if obstructionActive {
 								fmt.Printf("Obstruction detected: %v\n", obstructionActive)
