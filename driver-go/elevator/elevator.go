@@ -52,6 +52,8 @@ func LightsElevator(e Elevator) {
 	}
 }
 
+
+
 func EBtoString(e Elevator)string{
 	switch e.Behave {
 	case Idle:

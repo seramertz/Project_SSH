@@ -7,6 +7,7 @@ import (
 	"Driver-go/elevio"
 	"Driver-go/network/peers"
 	"time"
+	"strconv"
 )
 
 const localElevator = 0
@@ -75,11 +76,11 @@ func Distributor(
 			if elevators[localElevator].Requests[newOrder.Floor][newOrder.Button] == config.Order{
 				broadcast(elevators, ch_msgToNetwork)
 				elevators[localElevator].Requests[newOrder.Floor][newOrder.Button] = config.Confirmed
-				setAllLights(elevators)
+				setHallLights(elevators,id)
 				ch_orderToLocal <- newOrder
 			}
 			broadcast(elevators, ch_msgToNetwork)
-			setAllLights(elevators)
+			setHallLights(elevators,id)
 		case newState := <- ch_newLocalState:
 			if newState.Floor != elevators[localElevator].Floor || newState.Behave == elevator.Idle || newState.Behave == elevator.DoorOpen{
 				elevators[localElevator].Behaviour = config.Behaviour(int(newState.Behave))
@@ -98,7 +99,7 @@ func Distributor(
 				}
 				
 			}
-			setAllLights(elevators)
+			setHallLights(elevators,id)
 			broadcast(elevators, ch_msgToNetwork)
 			removeCompletedOrders(elevators)
 			
@@ -118,7 +119,7 @@ func Distributor(
 				}
 			}
 			extractNewOrder := confirmedNewOrder(elevators[localElevator])
-			setAllLights(elevators)
+			setHallLights(elevators,id)
 			removeCompletedOrders(elevators)
 			if extractNewOrder != nil{
 				tempOrder := elevio.ButtonEvent{
@@ -143,7 +144,7 @@ func Distributor(
 					}
 				}
 			}
-			setAllLights(elevators)
+			setHallLights(elevators,id)
 			broadcast(elevators, ch_msgToNetwork)
 		case <- ch_watchdogStuckSignal:
 			elevators[localElevator].Behaviour = config.Unavailable
@@ -153,7 +154,7 @@ func Distributor(
 					elevators[localElevator].Requests[floor][button] = config.None
 				}
 			}
-			setAllLights(elevators)
+			setHallLights(elevators,id)
 			ch_clearLocalHallOrders <- true
 		}
 	}
@@ -254,7 +255,7 @@ func confirmedNewOrder(elev *config.ElevatorDistributor) *config.Requests{
 		return nil
 	}
 	
-
+/*
 func setAllLights(elevators []*config.ElevatorDistributor) {
 	for button := 0 ; button < config.NumButtons ; button++{
 		for floor := 0 ; floor < config.NumFloors ; floor++{
@@ -268,4 +269,27 @@ func setAllLights(elevators []*config.ElevatorDistributor) {
 		}
 	}
 }
+*/
+
+func setHallLights(elevators []*config.ElevatorDistributor, ElevatorID string) {
+	for button := 0 ; button < config.NumButtons -1; button++{
+		for floor := 0 ; floor < config.NumFloors ; floor++{
+			isLight := false
+			for _, elev := range elevators{
+				if elev.Requests[floor][button] == config.Confirmed{
+					isLight = true
+				}
+			}
+			elevio.SetButtonLamp(elevio.ButtonType(button), floor, isLight)
+		}
+	}
+	for floor := 0; floor < config.NumFloors; floor++{
+		if elevators[ElevatorID].Requests[floor][elevio.BT_Cab] == config.Confirmed{
+				elevio.SetButtonLamp(elevio.BT_Cab, floor, true)
+			}
+		}
+	}
+	
+
+
 

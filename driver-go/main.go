@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-
+	"fmt"
 	"Driver-go/elevator"
 	"Driver-go/elevio"
 	"Driver-go/fsm"
@@ -11,21 +11,28 @@ import (
 	"Driver-go/watchdog"
 	"Driver-go/network/bcast"
 	"Driver-go/network/peers"
+	"strconv"
 )
+
+
+var Port int
+var id int
 
 
 func main() {
 
-	var port string
-	flag.StringVar(&port, "port", "", "port of this peer")
-	var id string
-	flag.StringVar(&id, "id", "", "id of this peer")
+	port := flag.Int("port", 15657, "<-- Default value, override using -port=xxxxx")
+	elevId := flag.Int("id", 0, "<-- Default value, override using -id=x")
 	flag.Parse()
-	
-	numFloors := 4
-	elevio.Init("localhost: 15657", numFloors)
 
-	elevio.Init("localhost:"+port, 4)
+	Port = *port
+	id = *elevId
+	
+	elevio.Init("localhost:"+strconv.Itoa(Port), config.NumFloors)
+
+	fmt.Println("Elevator initialized with id", id, "on port", Port)
+	fmt.Println("System has", config.NumFloors, "floors and", config.NumElevators, "elevators.")
+
 
 	// Distributor channels
 	ch_newLocalOrder := make(chan elevio.ButtonEvent, 100)
@@ -56,13 +63,13 @@ func main() {
 
 	go fsm.Fsm(ch_orderToLocal, ch_newLocalState, ch_clearLocalHallOrders, ch_arrivedAtFloors, ch_obstruction, ch_timerDoor)
 
-	go bcast.Transmitter(16568, ch_msgToNetwork)
-	go bcast.Receiver(16568, ch_msgFromNetwork)
-	go peers.Transmitter(15647, id, ch_peerTxEnable)
-	go peers.Receiver(15647, ch_peerUpdate)
+	go bcast.Transmitter(config.NumBcastPort, ch_msgToNetwork)
+	go bcast.Receiver(config.NumBcastPort, ch_msgFromNetwork)
+	go peers.Transmitter(config.NumPeerPort, strconv.Itoa(id), ch_peerTxEnable)
+	go peers.Receiver(config.NumPeerPort, ch_peerUpdate)
 
 	go watchdog.Watchdog(config.ElevatorStuckTolerance, ch_watchdogStuckReset, ch_watchdogStuckSignal)
 
-	go distributor.Distributor(id, ch_newLocalOrder, ch_newLocalState, ch_msgFromNetwork, ch_msgToNetwork, ch_orderToLocal, ch_peerUpdate, ch_watchdogStuckReset, ch_watchdogStuckSignal, ch_clearLocalHallOrders )
+	go distributor.Distributor(strconv.Itoa(id), ch_newLocalOrder, ch_newLocalState, ch_msgFromNetwork, ch_msgToNetwork, ch_orderToLocal, ch_peerUpdate, ch_watchdogStuckReset, ch_watchdogStuckSignal, ch_clearLocalHallOrders )
 	select {}
 }
