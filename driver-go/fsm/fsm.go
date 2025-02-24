@@ -85,6 +85,8 @@ func Fsm(
 								}
 								fmt.Printf("Obstruction cleared: %v\n", obstructionActive)
 								doorTimer = time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)
+							}else{
+								obstructionActive = false
 							}
 						}
 				default:	

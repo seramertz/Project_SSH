@@ -70,6 +70,6 @@ func main() {
 
 	go watchdog.Watchdog(config.ElevatorStuckTolerance, ch_watchdogStuckReset, ch_watchdogStuckSignal)
 
-	go distributor.Distributor(strconv.Itoa(id), ch_newLocalOrder, ch_newLocalState, ch_msgFromNetwork, ch_msgToNetwork, ch_orderToLocal, ch_peerUpdate, ch_watchdogStuckReset, ch_watchdogStuckSignal, ch_clearLocalHallOrders )
+	go distributor.Distributor(id, ch_newLocalOrder, ch_newLocalState, ch_msgFromNetwork, ch_msgToNetwork, ch_orderToLocal, ch_peerUpdate, ch_watchdogStuckReset, ch_watchdogStuckSignal, ch_clearLocalHallOrders )
 	select {}
 }

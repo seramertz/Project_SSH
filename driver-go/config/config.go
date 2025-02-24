@@ -2,7 +2,7 @@ package config
 
 const NumFloors = 4
 const NumButtons = 3
-const NumElevators = 4
+const NumElevators = 3
 const DoorOpenDuration = 3
 const StateUpdatePeriodsMs = 500
 const ElevatorStuckTolerance = 5
