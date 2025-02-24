@@ -33,7 +33,6 @@ func Fsm(
 		obstructionActive := false
 		//Statemachine defining the elevators state
 		for{
-			//fmt.Printf("in for loop")
 			elevator.LightsElevator(*e)
 			select{
 			case order := <-ch_orderChan: //an order is placed
@@ -64,7 +63,7 @@ func Fsm(
 						}
 				}
 			case floor := <-ch_arrivedAtFloors: //elevator has reached a floor
-				//fmt.Printf("in for floor")
+				
 				e.Floor = floor
 				switch{
 					case e.Behave == elevator.Moving:
@@ -76,6 +75,7 @@ func Fsm(
 							e.Behave = elevator.DoorOpen
 							ch_elevatorState <- *e
 							
+							
 							// Handle obstruction if active
 							if obstructionActive {
 								fmt.Printf("Obstruction detected: %v\n", obstructionActive)
@@ -83,6 +83,7 @@ func Fsm(
 								for obstructionActive {
 									obstructionActive = <-ch_obstruction
 								}
+								
 								fmt.Printf("Obstruction cleared: %v\n", obstructionActive)
 								doorTimer = time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)
 							}else{
@@ -94,7 +95,7 @@ func Fsm(
 					
 				}
 			case <-doorTimer.C: //door is open and timer is counting
-				//fmt.Printf("in for in doortimer")
+			
 				switch{
 					case e.Behave == elevator.DoorOpen:
 						request.RequestChooseDirection(e)
@@ -112,24 +113,25 @@ func Fsm(
 						break
 				}
 			case <-ch_clearLocalHallOrders: //delete the hallorders of this elevator
-				fmt.Printf("in for clear local hall orders")
+				
 				request.RequestClearHall(e)
-			case obstruction := <-ch_obstruction: //obstruction button 
-			if obstruction {
-				obstructionActive = true
-				if e.Behave == elevator.DoorOpen {
-					fmt.Printf("Obstruction detected: %v\n", obstruction)
-					doorTimer.Reset(time.Duration(config.DoorOpenDuration) * time.Second)
 
-					// Handle obstruction while door is open
-					for obstruction {
-						obstruction = <-ch_obstruction
+			case obstruction := <-ch_obstruction: //obstruction button 
+				if obstruction {
+					obstructionActive = true
+					if e.Behave == elevator.DoorOpen {
+						fmt.Printf("Obstruction detected: obstruction =  %v\n", obstruction)
+						doorTimer.Reset(time.Duration(config.DoorOpenDuration) * time.Second)
+
+						// Handle obstruction while door is open
+						for obstruction {
+							obstruction = <-ch_obstruction
+						}
 					}
+				} else {
+					obstructionActive = false
 				}
-			} else {
-				obstructionActive = false
-			}
-			fmt.Printf("Obstruction cleared: %v\n", obstruction)
+			fmt.Printf("Obstruction cleared: obstruction = %v\n", obstruction)
 			doorTimer = time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)
 			case <-timerUpdateState.C: //if the time is out
 				ch_elevatorState <- *e
