@@ -30,6 +30,14 @@ func broadcast(elevators []*config.ElevatorDistributor, ch_transmit chan <- []co
 	ch_transmit <- temporaryElevators
 	time.Sleep(50*time.Millisecond)
 }
+func reinitializeElevator(elevators []*config.ElevatorDistributor, id int) {
+    for _, elev := range elevators {
+        if elev.ID == strconv.Itoa(id) {
+            *elev = elevatorDistributorInit(strconv.Itoa(id))
+            break
+        }
+    }
+}
 
 //distribuing orders among the elevators
 func Distributor(
@@ -157,6 +165,8 @@ func Distributor(
 			}
 			setAllLights(elevators,id)
 			ch_clearLocalHallOrders <- true
+			reinitializeElevator(elevators, id)
+            broadcast(elevators, ch_msgToNetwork)
 		}
 	}
 }
