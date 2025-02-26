@@ -20,6 +20,7 @@ type Elevator struct {
 	Requests   [][]bool
 	Behave     Behaviour
 	TimerCount int
+	Obstructed bool
 }
 
 // Initializes an elevator to be at floor zero
@@ -40,7 +41,8 @@ func InitElevator() Elevator {
 		Direction:  elevio.MD_Stop,
 		Requests:   requests,
 		Behave:     Idle,
-		TimerCount: 0}
+		TimerCount: 0,
+		Obstructed: false,}
 }	
 
 

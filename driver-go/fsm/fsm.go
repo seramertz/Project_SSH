@@ -5,7 +5,7 @@ import (
 	"Driver-go/elevator"
 	"Driver-go/elevio"
 	"Driver-go/request"
-	"fmt"
+	//"fmt"
 	"time"
 )
 
@@ -30,7 +30,6 @@ func Fsm(
 		doorTimer := time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)
 		timerUpdateState := time.NewTicker(time.Duration(config.StateUpdatePeriodsMs) * time.Millisecond)
 		
-		obstructionActive := false
 		//Statemachine defining the elevators state
 		for{
 			elevator.LightsElevator(*e)
@@ -75,21 +74,6 @@ func Fsm(
 							e.Behave = elevator.DoorOpen
 							ch_elevatorState <- *e
 							
-							
-							//Fix: Obstruction activated by itself???? Is it because of the shared variable? 
-							// Handle obstruction if active
-							if obstructionActive {
-								fmt.Printf("Obstruction detected: %v\n", obstructionActive)
-								doorTimer.Stop()
-								for obstructionActive {
-									obstructionActive = <-ch_obstruction
-								}
-								
-								fmt.Printf("Obstruction cleared: %v\n", obstructionActive)
-								doorTimer = time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)
-							}else{
-								obstructionActive = false
-							}
 						}
 				default:	
 					break
@@ -99,17 +83,23 @@ func Fsm(
 			
 				switch{
 					case e.Behave == elevator.DoorOpen:
-						request.RequestChooseDirection(e)
-						elevio.SetMotorDirection(e.Direction)
-						elevio.SetDoorOpenLamp(false)
-
-						if e.Direction == elevio.MD_Stop{
-							e.Behave = elevator.Idle
-							ch_elevatorState <- *e
+						if e.Obstructed{
+							elevio.SetMotorDirection(elevio.MD_Stop)
+							doorTimer.Stop()
 						} else{
-							e.Behave = elevator.Moving
-							ch_elevatorState <- *e
+							request.RequestChooseDirection(e)
+							elevio.SetMotorDirection(e.Direction)
+							elevio.SetDoorOpenLamp(false)
+
+							if e.Direction == elevio.MD_Stop{
+								e.Behave = elevator.Idle
+								ch_elevatorState <- *e
+							} else{
+								e.Behave = elevator.Moving
+								ch_elevatorState <- *e
+							}
 						}
+						
 					default:	
 						break
 				}
@@ -118,24 +108,17 @@ func Fsm(
 				request.RequestClearHall(e)
 
 			
-			//Fix: Obstruction activates by itself?
-			case obstruction := <-ch_obstruction: //obstruction button 
-				if obstruction {
-					obstructionActive = true
-					if e.Behave == elevator.DoorOpen {
-						fmt.Printf("Obstruction detected: obstruction =  %v\n", obstruction)
-						doorTimer.Reset(time.Duration(config.DoorOpenDuration) * time.Second)
-
-						// Handle obstruction while door is open
-						for obstruction {
-							obstruction = <-ch_obstruction
-						}
-					}
-				} else {
-					obstructionActive = false
+			case obstruction := <-ch_obstruction: //obstruction button
+				if obstruction{
+					e.Obstructed = true
+					elevio.SetDoorOpenLamp(true)
+					doorTimer.Stop()
+				} else{
+					e.Obstructed = false
+					doorTimer.Reset(time.Duration(config.DoorOpenDuration) * time.Second)
 				}
-			fmt.Printf("Obstruction cleared: obstruction = %v\n", obstruction)
-			doorTimer = time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)
+				ch_elevatorState <- *e
+				
 			case <-timerUpdateState.C: //if the time is out
 				ch_elevatorState <- *e
 				timerUpdateState.Reset(time.Duration(config.StateUpdatePeriodsMs) * time.Millisecond)
