@@ -52,7 +52,7 @@ func SetLocalLights(e Elevator) {
 	}
 }
 
-//Elevator behavior to string
+// Elevator behavior to string
 func EBtoString(e Elevator) string {
 	switch e.Behave {
 	case Idle:
@@ -65,7 +65,8 @@ func EBtoString(e Elevator) string {
 	return "Unknown"
 }
 
-//Elevatordirection to string
+
+// Elevatordirection to string
 func EDToString(dirn elevio.MotorDirection) string {
 	switch dirn {
 	case elevio.MD_Up:
