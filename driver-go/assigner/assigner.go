@@ -37,7 +37,7 @@ func ReassignOrders(elevators []*config.ElevatorDistributor, ch_newLocalOrder ch
 }
 
 // Assignes new order to the right elevator depending on a cost function.
-func AssignOrder(elevators []*config.ElevatorDistributor, order elevio.ButtonEvent) {
+func AssignOrder(elevators []*config.ElevatorDistributor, order elevio.ButtonEvent){
 	if len(elevators) < 2 || order.Button == elevio.BT_Cab {
 		elevators[config.LocalElevator].Requests[order.Floor][order.Button] = config.Order
 		return

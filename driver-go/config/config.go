@@ -3,11 +3,11 @@ package config
 const NumFloors = 4
 const NumButtons = 3
 const NumElevators = 3
+const LocalElevator = 0
 const DoorOpenDuration = 3
 const StateUpdatePeriodsMs = 500
 const ElevatorStuckTolerance = 5
 const ReconnectTimer = 3
-const LocalElevator = 0
 const NumPeerPort = 45678
 const NumBcastPort = 45680
 

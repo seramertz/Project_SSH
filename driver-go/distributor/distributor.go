@@ -10,13 +10,11 @@ import (
 	"strconv"
 )
 
-//const localElevator = 0
 
 func elevatorDistributorInit(id string) config.ElevatorDistributor{
 	requests := make([][]config.RequestState, 4)
 	for floor := range requests{
 		requests[floor] = make([]config.RequestState, 3)
-		
 	}
 	return config.ElevatorDistributor{Requests: requests, ID: id, Floor:0, Behaviour: config.Idle}
 
@@ -73,6 +71,7 @@ func Distributor(
 			}
 		}
 		break 
+
 	case <- connectTimer.C:
 		break
 	}
@@ -90,6 +89,7 @@ func Distributor(
 			}
 			broadcast(elevators, ch_msgToNetwork)
 			setAllLights(elevators,id)
+
 		case newState := <- ch_newLocalState:
 			if newState.Floor != elevators[config.LocalElevator].Floor || newState.Behave == elevator.Idle || newState.Behave == elevator.DoorOpen{
 				elevators[config.LocalElevator].Behaviour = config.Behaviour(int(newState.Behave))
@@ -137,6 +137,7 @@ func Distributor(
 				ch_orderToLocal <- tempOrder
 				broadcast(elevators, ch_msgToNetwork)
 			}
+
 		case peer := <- ch_peerUpdate:
 			if len(peer.Lost) != 0{
 				for _, stringLostId := range peer.Lost{
@@ -155,6 +156,7 @@ func Distributor(
 			}
 			setAllLights(elevators,id)
 			broadcast(elevators, ch_msgToNetwork)
+			
 		case <- ch_watchdogStuckSignal:
 			elevators[config.LocalElevator].Behaviour = config.Unavailable
 			broadcast(elevators, ch_msgToNetwork)

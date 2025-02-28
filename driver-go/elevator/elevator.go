@@ -3,7 +3,7 @@ package elevator
 import (
 	"Driver-go/config"
 	"Driver-go/elevio"
-	"fmt"
+	//"fmt"
 )
 
 type Behaviour int
@@ -80,6 +80,7 @@ func EDToString(dirn elevio.MotorDirection) string {
 	return "Unknown"
 }
 
+/*
 func ElevatorPrint(e Elevator){
 	fmt.Println(" +-----------------+")
 	fmt.Printf(
@@ -102,3 +103,4 @@ func ElevatorPrint(e Elevator){
 	fmt.Println(" +-----------------+")
 
 }
+*/

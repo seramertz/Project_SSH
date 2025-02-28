@@ -23,7 +23,7 @@ func Fsm(
 		
 		elevio.SetDoorOpenLamp(false)
 
-		elevator.ElevatorPrint(*e)
+		//elevator.ElevatorPrint(*e)
 
 		ch_elevatorState <- *e
 
@@ -40,19 +40,20 @@ func Fsm(
 					case e.Behave == elevator.DoorOpen:
 						if e.Floor == order.Floor{
 							doorTimer.Reset(time.Duration(config.DoorOpenDuration) * time.Second)
-						} else{
+						}else{
 							e.Requests[order.Floor][order.Button] = true
 						}
+
 					case e.Behave == elevator.Moving:
 						e.Requests[order.Floor][order.Button] = true
+
 					case e.Behave == elevator.Idle:
 						if e.Floor == order.Floor{
-							
 							elevio.SetDoorOpenLamp(true)
 							doorTimer.Reset(time.Duration(config.DoorOpenDuration) * time.Second)
 							e.Behave = elevator.DoorOpen
 							ch_elevatorState <- *e
-						} else{
+						}else{
 							e.Requests[order.Floor][order.Button] = true
 							request.RequestChooseDirection(e)
 							elevio.SetMotorDirection(e.Direction)
@@ -61,8 +62,8 @@ func Fsm(
 							break
 						}
 				}
+
 			case floor := <-ch_arrivedAtFloors: //elevator has reached a floor
-				
 				e.Floor = floor
 				switch{
 					case e.Behave == elevator.Moving:
@@ -73,14 +74,13 @@ func Fsm(
 							doorTimer.Reset(time.Duration(config.DoorOpenDuration) * time.Second)
 							e.Behave = elevator.DoorOpen
 							ch_elevatorState <- *e
-							
 						}
 				default:	
 					break
 					
 				}
+
 			case <-doorTimer.C: //door is open and timer is counting
-			
 				switch{
 					case e.Behave == elevator.DoorOpen:
 						if e.Obstructed{
@@ -90,7 +90,6 @@ func Fsm(
 							request.RequestChooseDirection(e)
 							elevio.SetMotorDirection(e.Direction)
 							elevio.SetDoorOpenLamp(false)
-
 							if e.Direction == elevio.MD_Stop{
 								e.Behave = elevator.Idle
 								ch_elevatorState <- *e
@@ -103,10 +102,9 @@ func Fsm(
 					default:	
 						break
 				}
-			case <-ch_clearLocalHallOrders: //delete the hallorders of this elevator
-				
-				request.RequestClearHall(e)
 
+			case <-ch_clearLocalHallOrders: //delete the hallorders of this elevator
+				request.RequestClearHall(e)
 			
 			case obstruction := <-ch_obstruction: //obstruction button
 				if obstruction{
