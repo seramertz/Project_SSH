@@ -39,7 +39,7 @@ func reinitializeElevator(elevators []*config.ElevatorDistributor, id int) {
     }
 }
 
-// Distribuing orders among the elevators
+//distribuing orders among the elevators
 func Distributor(
 	id int,
 	ch_newLocalOrder chan elevio.ButtonEvent,

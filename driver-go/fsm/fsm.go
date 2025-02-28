@@ -5,12 +5,10 @@ import (
 	"Driver-go/elevator"
 	"Driver-go/elevio"
 	"Driver-go/request"
-
-	//"fmt"
 	"time"
 )
 
-// Statemachine for running the main elevator
+// Statemachine for running local elevator
 func Fsm(
 	ch_orderChan chan elevio.ButtonEvent,
 	ch_elevatorState chan<- elevator.Elevator,
@@ -30,11 +28,11 @@ func Fsm(
 	doorTimer := time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)
 	timerUpdateState := time.NewTicker(time.Duration(config.StateUpdatePeriodsMs) * time.Millisecond)
 
-	//Statemachine defining the elevators state
+	// Statemachine defining the elevators state
 	for {
 		elevator.SetLocalLights(*e)
 		select {
-		case order := <-ch_orderChan: //an order is placed
+		case order := <-ch_orderChan: // Handles new order
 			switch {
 			case e.Behave == elevator.DoorOpen:
 				if e.Floor == order.Floor {
@@ -62,7 +60,7 @@ func Fsm(
 				}
 			}
 
-		case floor := <-ch_arrivedAtFloors: //elevator has reached a floor
+		case floor := <-ch_arrivedAtFloors: // Handles arriving at floor
 			e.Floor = floor
 			switch {
 			case e.Behave == elevator.Moving:
@@ -79,7 +77,7 @@ func Fsm(
 
 			}
 
-		case <-doorTimer.C: //door is open and timer is counting
+		case <-doorTimer.C: // Handles door
 			switch {
 			case e.Behave == elevator.DoorOpen:
 				if e.Obstructed {
@@ -102,10 +100,10 @@ func Fsm(
 				break
 			}
 
-		case <-ch_clearLocalHallOrders: //delete the hallorders of this elevator
+		case <-ch_clearLocalHallOrders: // Delete the hallorders of this elevator
 			request.RequestClearHall(e)
 
-		case obstruction := <-ch_obstruction: //obstruction button
+		case obstruction := <-ch_obstruction: // Handles obstruction
 			if obstruction {
 				e.Obstructed = true
 				elevio.SetDoorOpenLamp(true)
@@ -116,7 +114,7 @@ func Fsm(
 			}
 			ch_elevatorState <- *e
 
-		case <-timerUpdateState.C: //if the time is out
+		case <-timerUpdateState.C: // Handles timeout
 			ch_elevatorState <- *e
 			timerUpdateState.Reset(time.Duration(config.StateUpdatePeriodsMs) * time.Millisecond)
 
