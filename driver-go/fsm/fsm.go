@@ -28,7 +28,7 @@ func Fsm(
 	doorTimer := time.NewTimer(time.Duration(config.DoorOpenDuration) * time.Second)
 	timerUpdateState := time.NewTicker(time.Duration(config.StateUpdatePeriodsMs) * time.Millisecond)
 
-	// Statemachine defining the elevators state
+	// Statemachine defining the elevators state 
 	for {
 		elevator.SetLocalLights(*e)
 		select {
