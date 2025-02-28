@@ -3,7 +3,6 @@ package elevator
 import (
 	"Driver-go/config"
 	"Driver-go/elevio"
-	//"fmt"
 )
 
 type Behaviour int
@@ -32,7 +31,7 @@ func InitElevator() Elevator {
 			requests[floor][button] = false
 		}
 	}
-	for (elevio.GetFloor() ==-1){
+	for elevio.GetFloor() == -1 {
 		elevio.SetMotorDirection(elevio.MD_Down)
 	}
 	elevio.SetMotorDirection(elevio.MD_Stop)
@@ -42,21 +41,19 @@ func InitElevator() Elevator {
 		Requests:   requests,
 		Behave:     Idle,
 		TimerCount: 0,
-		Obstructed: false,}
-}	
-
+		Obstructed: false}
+}
 
 // Set elevtor lights and floor indicators
-func LightsElevator(e Elevator) {
+func SetLocalLights(e Elevator) {
 	elevio.SetFloorIndicator(e.Floor)
 	for floor := range e.Requests {
 		elevio.SetButtonLamp(elevio.ButtonType(elevio.BT_Cab), floor, e.Requests[floor][elevio.BT_Cab])
 	}
 }
 
-
-
-func EBtoString(e Elevator)string{
+//Elevator behavior to string
+func EBtoString(e Elevator) string {
 	switch e.Behave {
 	case Idle:
 		return "Idle"
@@ -68,6 +65,7 @@ func EBtoString(e Elevator)string{
 	return "Unknown"
 }
 
+//Elevatordirection to string
 func EDToString(dirn elevio.MotorDirection) string {
 	switch dirn {
 	case elevio.MD_Up:
@@ -79,28 +77,3 @@ func EDToString(dirn elevio.MotorDirection) string {
 	}
 	return "Unknown"
 }
-
-/*
-func ElevatorPrint(e Elevator){
-	fmt.Println(" +-----------------+")
-	fmt.Printf(
-		" |  Floor: %d       |\n |  Dirn: %s       |\n |  Behaviour: %s  |\n",
-		e.Floor, EDToString(e.Direction), EBtoString(e),
-	)
-	fmt.Println(" +-----------------+")
-	fmt.Println(" | | up | down | cab |")
-	for f := config.NumFloors - 1; f >= 0; f-- {
-		fmt.Printf(" | |")
-		for b := 0; b < config.NumButtons; b++ {
-			if e.Requests[f][b] {
-				fmt.Printf("  x  ")
-			} else {
-				fmt.Printf("     ")
-			}
-		}
-		fmt.Println(" |")
-	}	
-	fmt.Println(" +-----------------+")
-
-}
-*/

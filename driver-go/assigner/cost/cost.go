@@ -10,6 +10,7 @@ const NumElevators = 4
 
 // Cost function that calculates the cost of assigning an order to an elevator.
 // Alternative 1.2: Time until unassigned request served.
+
 func Cost(elev *config.ElevatorDistributor, req elevio.ButtonEvent) int {
 
 	if elev.Behaviour  != config.Unavailable {

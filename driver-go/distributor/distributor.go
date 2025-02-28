@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-
+//Initialize elevator distributor
 func elevatorDistributorInit(id string) config.ElevatorDistributor{
 	requests := make([][]config.RequestState, 4)
 	for floor := range requests{
@@ -28,6 +28,7 @@ func broadcast(elevators []*config.ElevatorDistributor, ch_transmit chan <- []co
 	ch_transmit <- temporaryElevators
 	time.Sleep(50*time.Millisecond)
 }
+
 func reinitializeElevator(elevators []*config.ElevatorDistributor, id int) {
     for _, elev := range elevators {
         if elev.ID == strconv.Itoa(id) {
@@ -113,7 +114,9 @@ func Distributor(
 			removeCompletedOrders(elevators)
 			
 		case newElevators := <- ch_msgFromNetwork:
-			updateElevators(elevators,newElevators)
+			if len(newElevators) > 0 {
+				updateElevators(elevators,newElevators)
+			}
 			assigner.ReassignOrders(elevators, ch_newLocalOrder)
 			for _, newElev := range newElevators{
 				elevExists := false
@@ -156,7 +159,7 @@ func Distributor(
 			}
 			setAllLights(elevators,id)
 			broadcast(elevators, ch_msgToNetwork)
-			
+
 		case <- ch_watchdogStuckSignal:
 			elevators[config.LocalElevator].Behaviour = config.Unavailable
 			broadcast(elevators, ch_msgToNetwork)
