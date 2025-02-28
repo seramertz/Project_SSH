@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-//Initialize elevator distributor
+// Initialize elevator distributor
 func elevatorDistributorInit(id string) config.ElevatorDistributor{
 	requests := make([][]config.RequestState, 4)
 	for floor := range requests{
@@ -19,7 +19,7 @@ func elevatorDistributorInit(id string) config.ElevatorDistributor{
 	return config.ElevatorDistributor{Requests: requests, ID: id, Floor:0, Behaviour: config.Idle}
 
 }
-
+// Broadcast the current state of all elevators to a specified channel
 func broadcast(elevators []*config.ElevatorDistributor, ch_transmit chan <- []config.ElevatorDistributor){
 	temporaryElevators := make([]config.ElevatorDistributor, 0)
 	for _, elevator := range elevators{
@@ -29,6 +29,7 @@ func broadcast(elevators []*config.ElevatorDistributor, ch_transmit chan <- []co
 	time.Sleep(50*time.Millisecond)
 }
 
+// Reinitializes an elevator with a given ID
 func reinitializeElevator(elevators []*config.ElevatorDistributor, id int) {
     for _, elev := range elevators {
         if elev.ID == strconv.Itoa(id) {
@@ -38,7 +39,7 @@ func reinitializeElevator(elevators []*config.ElevatorDistributor, id int) {
     }
 }
 
-//distribuing orders among the elevators
+// Distribuing orders among the elevators
 func Distributor(
 	id int,
 	ch_newLocalOrder chan elevio.ButtonEvent,
@@ -59,7 +60,7 @@ func Distributor(
 
 	connectTimer := time.NewTimer(time.Duration(config.ReconnectTimer)*time.Second)
 
-	//check the network for new elevators, handles receiving the new elevators states
+	// Check the network for new elevators, handles receiving the new elevators states
 	select{
 	case newElevators := <- ch_msgFromNetwork:
 		for _, elev := range newElevators{
@@ -77,7 +78,7 @@ func Distributor(
 		break
 	}
 
-	//Distributes orders among the elevators on the network
+	// Distributes orders among the elevators on the network
 	for{
 		select{
 		case newOrder := <- ch_newLocalOrder:
@@ -160,7 +161,7 @@ func Distributor(
 			setAllLights(elevators,id)
 			broadcast(elevators, ch_msgToNetwork)
 
-		case <- ch_watchdogStuckSignal:
+		case <- ch_watchdogStuckSignal: // Detection of stuck elevator
 			elevators[config.LocalElevator].Behaviour = config.Unavailable
 			broadcast(elevators, ch_msgToNetwork)
 			for floor := range elevators[config.LocalElevator].Requests{
@@ -176,7 +177,7 @@ func Distributor(
 	}
 }
 
-
+// Remove completed orders from the elevator
 func removeCompletedOrders(elevators []*config.ElevatorDistributor){
 	for _, elev := range elevators{
 		for floor := range elev.Requests{
@@ -189,7 +190,7 @@ func removeCompletedOrders(elevators []*config.ElevatorDistributor){
 	}
 }
 
-
+// Update state of local elevator based on new elevator states 
 func updateElevators(elevators []*config.ElevatorDistributor, newElevators []config.ElevatorDistributor){
 	if elevators[config.LocalElevator].ID != newElevators[config.LocalElevator].ID{
 		for _,elev := range elevators{
@@ -222,7 +223,7 @@ func updateElevators(elevators []*config.ElevatorDistributor, newElevators []con
 	}
 }
 
-
+// Add a new elevator to the network
 func addNewElevator (elevators *[]* config.ElevatorDistributor, newElevator config.ElevatorDistributor) {
 	tempElev := new(config.ElevatorDistributor)
 	*tempElev = elevatorDistributorInit(newElevator.ID)
@@ -239,7 +240,7 @@ func addNewElevator (elevators *[]* config.ElevatorDistributor, newElevator conf
 }
 
 
-
+// Extracts a new order from the elevator
 func confirmedNewOrder(elev *config.ElevatorDistributor) *config.Requests{
 	for floor := range elev.Requests {
 		for button := 0 ; button < len(elev.Requests[floor]); button++{
@@ -257,6 +258,7 @@ func confirmedNewOrder(elev *config.ElevatorDistributor) *config.Requests{
 	}
 	
 
+// Set all lights in the elevators according to the requests
 func setAllLights(elevators []*config.ElevatorDistributor, elevatorID int) {
 	for button := 0 ; button < config.NumButtons -1; button++{
 		for floor := 0 ; floor < config.NumFloors ; floor++{
