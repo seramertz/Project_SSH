@@ -26,7 +26,7 @@ func broadcast(elevators []*config.ElevatorDistributor, ch_transmit chan <- []co
 		temporaryElevators = append(temporaryElevators, *elevator)
 	}
 	ch_transmit <- temporaryElevators
-	time.Sleep(50*time.Millisecond)
+	time.Sleep(25*time.Millisecond)
 }
 
 // Reinitializes an elevator with a given ID
