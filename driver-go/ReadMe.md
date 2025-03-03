@@ -12,14 +12,18 @@ Running just "go run main.go" starts an elevator with default port = 15657 and i
 Elevio: 
 ---
 Responsible for interfacing with the elevator hardware. It provides functions to control the elevator system. 
+
 ---
 FSM:
 ---
-Manages the state of the local elevator. Handles events as new orders, arriving at floors, door obstruction and door timer expiration. 
+Manages the state of the local elevator. Handles events as new orders, arriving at floors, door obstruction and door timer 
+expiration. 
+
 ---
 Config: 
 ---
 Contains configurations constants and types used throughout the project. 
+
 ---
 Distributer: 
 ---
