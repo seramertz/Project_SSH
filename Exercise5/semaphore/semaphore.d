@@ -33,10 +33,27 @@ class Resource(T) {
     }
     
     T allocate(int priority){
+        wait(M);
+        while(busy){
+            notify(M);
+            wait(Semaphore[priority]);
+            wait(M);
+        }
+        busy = true;
+        notify(M);
         return value;
     }
     
     void deallocate(T v){
+        wait(M);
+        busy = false;
+        if(Semaphore[1] < 0){
+            notify(Semaphore[1]);
+        } else if(Semaphore[0] < 0){
+            notify(Semaphore[0]);
+        }
+        notify(M);
+        
         value = v;
     }
 }
