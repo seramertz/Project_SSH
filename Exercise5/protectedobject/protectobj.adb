@@ -33,12 +33,14 @@ procedure protectobj is
         entry allocateLow(val: out IntVec.Vector) when True is
         begin
             --Put_Line("allocateLow");
+            busy := true;
             val := value;
         end allocateLow;
     
         entry allocateHigh(val: out IntVec.Vector) when True is
         begin
             --Put_Line("allocateHigh");
+            busy := true;
             val := value;
         end allocateHigh;
 
@@ -46,7 +48,10 @@ procedure protectobj is
         begin
             --Put_Line("deallocate");
             value := val;
+            busy := false;
+
         end deallocate;
+        --For å kjøre: skriv først 'gnatmake protectobj.adb' så './protectobj' :)
 
     end Resource;
 
