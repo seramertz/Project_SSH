@@ -1,10 +1,3 @@
-140cac47
-8
-- Exessive commenting. We have comments for everything, some appear a bit over the top. 
-- There are several go routines running at the same time. From main it is not clear what does what. 
-- The distributer file does a lot of the work. Maybe more than the module should. 
-- Could possibly move the broadcast function from the distributer to the network folder. 
-
 0903f129
 8
 - Looking from main there appears to be two modules running, both using the same channels as input. 
@@ -40,3 +33,9 @@
 - The fsm file contains several fsm functions, it might me more intuitive to have one fsm function handling the different states and add helper functions for the rest. Now there are separate helperfunctions for different senarios. Making a single fsm function handling the states looks cleaner in main as well as it could be called as a seperate go routine. 
 - Overall I think that the code is understandable and clean. The file and foldernames make sense, and the modules are distributed in a good way. Functions have good and informative names. Not to many comments, but they appear when things were unclear. 
 
+140cac47
+8
+- Exessive commenting. We have comments for everything, some appear a bit over the top. 
+- There are several go routines running at the same time. From main it is not clear what does what. 
+- The distributer file does a lot of the work. Maybe more than the module should. 
+- Could possibly move the broadcast function from the distributer to the network folder. 
