@@ -70,7 +70,6 @@ func resourceManager(takeLow chan Resource, takeHigh chan Resource, giveBack cha
 
                 }
             }
-      
         }
     }
 }
