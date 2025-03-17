@@ -20,7 +20,7 @@ func Cost(elev *config.ElevatorDistributor, req elevio.ButtonEvent) int {
 
 		switch e.Behaviour {
 		case config.Idle:
-			requestChooseDirection(e)
+			distributorRequestChooseDirection(e)
 			if e.Direction == config.Stop {
 				return duration
 			}
@@ -32,10 +32,10 @@ func Cost(elev *config.ElevatorDistributor, req elevio.ButtonEvent) int {
 		}
 
 		for {
-			if requestShouldStop(*e) {
-				requestClearAtCurrentFloor(e)
+			if distributorRequestShouldStop(*e) {
+				distributorRequestClearAtCurrentFloor(e)
 				duration += config.DoorOpenDuration
-				requestChooseDirection(e)
+				distributorRequestChooseDirection(e)
 				if e.Direction == config.Stop {
 					return duration
 				}
@@ -47,7 +47,9 @@ func Cost(elev *config.ElevatorDistributor, req elevio.ButtonEvent) int {
 	return highestDuration
 }
 
-func requestsAbove(elev config.ElevatorDistributor) bool {
+
+//Request functions for elevator distributor object
+func distributorRequestsAbove(elev config.ElevatorDistributor) bool {
 	for f := elev.Floor + 1; f < config.NumFloors; f++ {
 		for btn := range elev.Requests[f] {
 			if elev.Requests[f][btn] == config.Confirmed {
@@ -58,7 +60,7 @@ func requestsAbove(elev config.ElevatorDistributor) bool {
 	return false
 }
 
-func requestsBelow(elev config.ElevatorDistributor) bool {
+func distributorRequestsBelow(elev config.ElevatorDistributor) bool {
 	for f := 0; f < elev.Floor; f++ {
 		for btn := range elev.Requests[f] {
 			if elev.Requests[f][btn] == config.Confirmed {
@@ -69,43 +71,43 @@ func requestsBelow(elev config.ElevatorDistributor) bool {
 	return false
 }
 
-func requestClearAtCurrentFloor(elev *config.ElevatorDistributor){
+func distributorRequestClearAtCurrentFloor(elev *config.ElevatorDistributor){
 	elev.Requests[elev.Floor][int(elevio.BT_Cab)] = config.None
 	switch {
 	case elev.Direction  == config.Up:
 		elev.Requests[elev.Floor][int(elevio.BT_HallUp)] = config.None
-		if !requestsAbove(*elev) {
+		if !distributorRequestsAbove(*elev) {
 			elev.Requests[elev.Floor][int(elevio.BT_HallDown)] = config.None
 		}
 	case elev.Direction == config.Down:
 		elev.Requests[elev.Floor][int(elevio.BT_HallDown)] = config.None
-		if !requestsBelow(*elev) {
+		if !distributorRequestsBelow(*elev) {
 			elev.Requests[elev.Floor][int(elevio.BT_HallUp)] = config.None
 		}
 	}
 }
 
-func requestShouldStop(elev config.ElevatorDistributor) bool {
+func distributorRequestShouldStop(elev config.ElevatorDistributor) bool {
 	switch {
 	case elev.Direction  == config.Down:
 		return elev.Requests[elev.Floor][int(elevio.BT_HallDown)] == config.Confirmed ||
 			elev.Requests[elev.Floor][int(elevio.BT_Cab)] == config.Confirmed ||
-			!requestsBelow(elev)
+			!distributorRequestsBelow(elev)
 	case elev.Direction == config.Up:
 		return elev.Requests[elev.Floor][int(elevio.BT_HallUp)] == config.Confirmed ||
 			elev.Requests[elev.Floor][int(elevio.BT_Cab)] == config.Confirmed ||
-			!requestsAbove(elev)
+			!distributorRequestsAbove(elev)
 	default:
 		return true
 	}
 }
 
-func requestChooseDirection(elev *config.ElevatorDistributor) {
+func distributorRequestChooseDirection(elev *config.ElevatorDistributor) {
 	switch elev.Direction{
 	case config.Up:
-		if requestsAbove(*elev) {
+		if distributorRequestsAbove(*elev) {
 			elev.Direction  = config.Up
-		} else if requestsBelow(*elev) {
+		} else if distributorRequestsBelow(*elev) {
 			elev.Direction = config.Down
 		} else {
 			elev.Direction  = config.Stop
@@ -113,9 +115,9 @@ func requestChooseDirection(elev *config.ElevatorDistributor) {
 	case config.Down:
 		fallthrough
 	case config.Stop:
-		if requestsBelow(*elev) {
+		if distributorRequestsBelow(*elev) {
 			elev.Direction = config.Down
-		} else if requestsAbove(*elev) {
+		} else if distributorRequestsAbove(*elev) {
 			elev.Direction = config.Up
 		} else {
 			elev.Direction = config.Stop
