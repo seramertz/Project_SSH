@@ -10,7 +10,7 @@ const NumElevators = 4
 
 // Cost function that calculates the cost of assigning an order to an elevator
 func Cost(elev *config.ElevatorDistributor, req elevio.ButtonEvent) int {
-
+	highestDuration := 999
 	if elev.Behaviour  != config.Unavailable {
 		e := new(config.ElevatorDistributor)
 		*e = *elev
@@ -44,7 +44,7 @@ func Cost(elev *config.ElevatorDistributor, req elevio.ButtonEvent) int {
 			duration += TRAVEL_TIME
 		}
 	}
-	return 999
+	return highestDuration
 }
 
 func requestsAbove(elev config.ElevatorDistributor) bool {

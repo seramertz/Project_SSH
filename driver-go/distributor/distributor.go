@@ -19,25 +19,7 @@ func elevatorDistributorInit(id string) config.ElevatorDistributor{
 	return config.ElevatorDistributor{Requests: requests, ID: id, Floor:0, Behaviour: config.Idle}
 
 }
-// Broadcast the current state of all elevators to a specified channel
-func broadcast(elevators []*config.ElevatorDistributor, ch_transmit chan <- []config.ElevatorDistributor){
-	temporaryElevators := make([]config.ElevatorDistributor, 0)
-	for _, elevator := range elevators{
-		temporaryElevators = append(temporaryElevators, *elevator)
-	}
-	ch_transmit <- temporaryElevators
-	time.Sleep(25*time.Millisecond)
-}
 
-// Reinitializes an elevator with a given ID
-func reinitializeElevator(elevators []*config.ElevatorDistributor, id int) {
-    for _, elev := range elevators {
-        if elev.ID == strconv.Itoa(id) {
-            *elev = elevatorDistributorInit(strconv.Itoa(id))
-            break
-        }
-    }
-}
 
 // Distribuing orders among the elevators
 func Distributor(
@@ -86,11 +68,11 @@ func Distributor(
 			if elevators[config.LocalElevator].Requests[newOrder.Floor][newOrder.Button] == config.Order{
 				broadcast(elevators, ch_msgToNetwork)
 				elevators[config.LocalElevator].Requests[newOrder.Floor][newOrder.Button] = config.Confirmed
-				setAllLights(elevators,id)
+				setLights(elevators,id)
 				ch_orderToLocal <- newOrder
 			}
 			broadcast(elevators, ch_msgToNetwork)
-			setAllLights(elevators,id)
+			setLights(elevators,id)
 
 		case newState := <- ch_newLocalState:
 			if newState.Floor != elevators[config.LocalElevator].Floor || newState.Behave == elevator.Idle || newState.Behave == elevator.DoorOpen{
@@ -110,9 +92,9 @@ func Distributor(
 				}
 				
 			}
-			setAllLights(elevators,id)
+			setLights(elevators,id)
 			broadcast(elevators, ch_msgToNetwork)
-			removeCompletedOrders(elevators)
+			assigner.RemoveCompletedOrders(elevators)
 			
 		case newElevators := <- ch_msgFromNetwork:
 			if len(newElevators) > 0 {
@@ -131,9 +113,9 @@ func Distributor(
 					addNewElevator(&elevators,newElev)
 				}
 			}
-			extractNewOrder := confirmedNewOrder(elevators[config.LocalElevator])
-			setAllLights(elevators,id)
-			removeCompletedOrders(elevators)
+			extractNewOrder := assigner.ConfirmedNewOrder(elevators[config.LocalElevator])
+			setLights(elevators,id)
+			assigner.RemoveCompletedOrders(elevators)
 			if extractNewOrder != nil{
 				tempOrder := elevio.ButtonEvent{
 					Button : elevio.ButtonType(extractNewOrder.Button),
@@ -158,7 +140,7 @@ func Distributor(
 					}
 				}
 			}
-			setAllLights(elevators,id)
+			setLights(elevators,id)
 			broadcast(elevators, ch_msgToNetwork)
 
 		case <- ch_watchdogStuckSignal: // Detection of stuck elevator
@@ -169,7 +151,7 @@ func Distributor(
 					elevators[config.LocalElevator].Requests[floor][button] = config.None
 				}
 			}
-			setAllLights(elevators,id)
+			setLights(elevators,id)
 			ch_clearLocalHallOrders <- true
 			reinitializeElevator(elevators, id)
             broadcast(elevators, ch_msgToNetwork)
@@ -177,17 +159,24 @@ func Distributor(
 	}
 }
 
-// Remove completed orders from the elevator
-func removeCompletedOrders(elevators []*config.ElevatorDistributor){
-	for _, elev := range elevators{
-		for floor := range elev.Requests{
-			for button := range elev.Requests[floor]{
-				if elev.Requests[floor][button] == config.Complete{
-					elev.Requests[floor][button] = config.None
-				}
-			}
-		}
+// Broadcast the current state of all elevators to a specified channel
+func broadcast(elevators []*config.ElevatorDistributor, ch_transmit chan <- []config.ElevatorDistributor){
+	temporaryElevators := make([]config.ElevatorDistributor, 0)
+	for _, elevator := range elevators{
+		temporaryElevators = append(temporaryElevators, *elevator)
 	}
+	ch_transmit <- temporaryElevators
+	time.Sleep(25*time.Millisecond)
+}
+
+// Reinitializes an elevator with a given ID
+func reinitializeElevator(elevators []*config.ElevatorDistributor, id int) {
+    for _, elev := range elevators {
+        if elev.ID == strconv.Itoa(id) {
+            *elev = elevatorDistributorInit(strconv.Itoa(id))
+            break
+        }
+    }
 }
 
 // Update state of local elevator based on new elevator states 
@@ -211,10 +200,9 @@ func updateElevators(elevators []*config.ElevatorDistributor, newElevators []con
 			if newElev.ID == elevators[config.LocalElevator].ID{
 				for floor := range newElev.Requests{
 					for button := range newElev.Requests[floor]{
-						if elevators[config.LocalElevator].Behaviour != config.Unavailable{
-							if newElev.Requests[floor][button] == config.Order {
-								(*elevators[config.LocalElevator]).Requests[floor][button] = config.Order
-							}
+						if (elevators[config.LocalElevator].Behaviour != config.Unavailable) &&
+							(newElev.Requests[floor][button] == config.Order){
+							(*elevators[config.LocalElevator]).Requests[floor][button] = config.Order
 						}
 					}
 				}
@@ -239,32 +227,13 @@ func addNewElevator (elevators *[]* config.ElevatorDistributor, newElevator conf
 	*elevators = append(*elevators, tempElev)
 }
 
-
-// Extracts a new order from the elevator
-func confirmedNewOrder(elev *config.ElevatorDistributor) *config.Requests{
-	for floor := range elev.Requests {
-		for button := 0 ; button < len(elev.Requests[floor]); button++{
-			if elev.Requests[floor][button] == config.Order{
-				elev.Requests[floor][button] = config.Confirmed 
-				tempOrder := new(config.Requests)
-				*tempOrder = config.Requests{
-					Floor: floor,
-					Button: config.ButtonType(button)}
-					return tempOrder
-				}
-			}
-		}
-		return nil
-	}
 	
-
 // Set all lights in the elevators according to the requests
-func setAllLights(elevators []*config.ElevatorDistributor, elevatorID int) {
+func setLights(elevators []*config.ElevatorDistributor, elevatorID int) {
 	for button := 0 ; button < config.NumButtons -1; button++{
 		for floor := 0 ; floor < config.NumFloors ; floor++{
 			isLight := false
 			for _, elev := range elevators{
-				
 				if elev.Requests[floor][button] == config.Confirmed{
 					isLight = true
 				}
@@ -278,8 +247,8 @@ func setAllLights(elevators []*config.ElevatorDistributor, elevatorID int) {
 				elevio.SetButtonLamp(elevio.BT_Cab, floor, true)
 			}
 		}
-		}
 	}
+}
 	
 
 
