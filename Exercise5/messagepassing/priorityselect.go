@@ -39,36 +39,30 @@ type Resource struct {
 func resourceManager(takeLow chan Resource, takeHigh chan Resource, giveBack chan Resource){
 
     res := Resource{}
-    highWaiting := false
-    lowWaiting := false
+    resourceArrived := true
 
     
     for {
-        select {
-        case res = <-giveBack:
-            fmt.Printf("[resource manager]: resource returned\n")
-        default:
-            if highWaiting{
-                select{
-                case takeHigh<- res:
-                    fmt.Printf("[resource manager]: resource taken (high)\n")
-                default: 
-                }
-            }else if lowWaiting{
-                select{
-                case takeLow<- res:
-                    fmt.Printf("[resource manager]: resource taken (low)\n")
-                default:
-            }
-            }else{
-                select{
-                case takeHigh <- res:
-                    highWaiting = false
-                case takeLow <-res:
-                    lowWaiting = false
-                default:
-
-                }
+        if resourceArrived{
+             	select {
+             			case takeHigh <- res:
+             				fmt.Printf("[resource manager]: resource taken (high)\n")
+             				resourceArrived = false
+             			case takeLow <- res:
+             				fmt.Printf("[resource manager]: resource taken (low)\n")
+             				resourceArrived = false
+             			default:
+             				// No one is requesting the resource, do nothing
+             			}
+             		}
+             
+             		select {
+             		case res = <-giveBack:
+             			fmt.Printf("[resource manager]: resource returned\n")
+             			resourceArrived = true
+             		default:
+             			// No resource returned, do nothing
+             		}
             }
         }
     }
