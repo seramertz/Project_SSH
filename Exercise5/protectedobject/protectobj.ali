@@ -3,6 +3,7 @@ M P W=b
 P SS ZX
 
 RN
+RV SIMPLE_BARRIERS
 RV NO_ABORT_STATEMENTS
 RV NO_ACCESS_SUBPROGRAMS
 RV NO_ALLOCATORS
@@ -42,7 +43,7 @@ RV MAX_PROTECTED_ENTRIES=2
 RV MAX_TASKS=1+
 RV MAX_ENTRY_QUEUE_LENGTH=1+
 
-U protectobj%b		protectobj.adb		6bcbe3b2 NE OO SU IL
+U protectobj%b		protectobj.adb		9416179a NE OO SU IL
 W ada%s			ada.ads			ada.ali
 Z ada.calendar.delays%s	a-caldel.adb		a-caldel.ali
 W ada.containers%s	a-contai.ads		a-contai.ali
@@ -106,7 +107,7 @@ D a-uncdea.ads		20230707070819 eff36322 ada.unchecked_deallocation%s
 D interfac.ads		20230707070819 5ab55268 interfaces%s
 D i-c.ads		20230707070819 5421119b interfaces.c%s
 D i-cstrea.ads		20230707070819 e53d8b8e interfaces.c_streams%s
-D protectobj.adb	20250303095409 daf1d989 protectobj%b
+D protectobj.adb	20250321073527 252c2da1 protectobj%b
 D system.ads		20230707070819 4635ec04 system%s
 D s-addima.ads		20230707070819 a1ec9d3a system.address_image%s
 D s-atacco.ads		20230707070819 4c36d12f system.address_to_access_conversions%s
@@ -165,9 +166,9 @@ X 8 a-convec.ads
 621V13 Iterate{13|32C9[111[26|10]]} 26|178s31[10]
 X 13 a-iteint.ads
 24h9 Forward_Iterator
-32h9 Reversible_Iterator<24R9[8|111]>
-32C9 Reversible_Iterator<32R9[8|111[26|10]]>
 32h9 Reversible_Iterator<24R9[8|111[26|10]]>
+32C9 Reversible_Iterator<32R9[8|111[26|10]]>
+32h9 Reversible_Iterator<24R9[8|111]>
 X 17 a-textio.ads
 57K13*Text_IO 727e16 26|2w10 2r27 14r35
 86I12*Field{integer}
@@ -183,14 +184,14 @@ X 26 protectobj.adb
 10K13 IntVec[8|73] 13r9 24r37 25r36 26r35 28r16 33r36 40r37 47r35 72r16 139r21
 14K13 Integer_IO[19|46] 105r13 110r13
 23W20 Resource 28E9 30l9 30e17 31b20 56l9 56t17 70r28 137r29
-24Y15 allocateHigh 24<28 40b15 45l13 45t25 79s15 175s7
+24Y15 allocateHigh 24<28 33r74 40b15 45l13 45t25 79s15 175s7
 24r28 val{8|88R9[10]} 44m13
 25Y15 allocateLow 25<27 33b15 38l13 38t24 81s15
 25r27 val{8|88R9[10]} 37m13
 26U19 deallocate 26>30 47b19 53l13 53t23 88s11
 26r30 val{8|88R9[10]} 47b30 50r22
 28r9 value{8|88R9[10]} 37r20 44r20 50r13
-29b9 busy{boolean} 36r13 43r13 51r13
+29b9 busy{boolean} 33r60 36r13 40r61 43r13 51r13
 33r27 val{8|88R9[10]}
 40r28 val{8|88R9[10]}
 60E10 ExecutionState 60e60 61r48

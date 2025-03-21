@@ -38,32 +38,43 @@ type Resource struct {
 
 func resourceManager(takeLow chan Resource, takeHigh chan Resource, giveBack chan Resource){
 
-    res := Resource{}
-    resourceArrived := true
-
+    //res := Resource{}
+    //resourceArrived := true
+    var res Resource
+    sendHigh := takeHigh
+    sendLow := takeLow
     
     for {
-        if resourceArrived{
-             	select {
-             			case takeHigh <- res:
-             				//fmt.Printf("[resource manager]: resource taken (high)\n")
-             				resourceArrived = false
-             			case takeLow <- res:
-             				//fmt.Printf("[resource manager]: resource taken (low)\n")
-             				resourceArrived = false
-             			default:
-             				// No one is requesting the resource, do nothing
-             			}
-             		}
-            select {
-            case res = <-giveBack:
-                //fmt.Printf("[resource manager]: resource returned\n")
-                resourceArrived = true
-            default:
-                // No resource returned, do nothing
+        select{
+        case sendHigh <- res:
+            sendHigh = nil
+            sendLow = nil
+        case r := <-giveBack:
+            res = r
+            sendHigh = takeHigh
+            sendLow = takeLow
+        default: 
+            select{
+            case sendLow <- res:
+                sendHigh = nil
+                sendLow = nil
+            case r := <-giveBack:
+                res = r
+                sendHigh = takeHigh
+                sendLow = takeLow
+
+            default: 
+            time.Sleep(5 * time.Millisecond)
             }
-             		
+            
         }
+        if sendHigh == nil && sendLow == nil {
+            r := <-giveBack
+            res = r
+            sendHigh = takeHigh
+            sendLow = takeLow
+        }
+    }
 }
     
 
