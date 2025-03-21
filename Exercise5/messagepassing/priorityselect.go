@@ -46,26 +46,24 @@ func resourceManager(takeLow chan Resource, takeHigh chan Resource, giveBack cha
         if resourceArrived{
              	select {
              			case takeHigh <- res:
-             				fmt.Printf("[resource manager]: resource taken (high)\n")
+             				//fmt.Printf("[resource manager]: resource taken (high)\n")
              				resourceArrived = false
              			case takeLow <- res:
-             				fmt.Printf("[resource manager]: resource taken (low)\n")
+             				//fmt.Printf("[resource manager]: resource taken (low)\n")
              				resourceArrived = false
              			default:
              				// No one is requesting the resource, do nothing
              			}
              		}
-             
-             		select {
-             		case res = <-giveBack:
-             			fmt.Printf("[resource manager]: resource returned\n")
-             			resourceArrived = true
-             		default:
-             			// No resource returned, do nothing
-             		}
+            select {
+            case res = <-giveBack:
+                //fmt.Printf("[resource manager]: resource returned\n")
+                resourceArrived = true
+            default:
+                // No resource returned, do nothing
             }
+             		
         }
-    }
 }
     
 
