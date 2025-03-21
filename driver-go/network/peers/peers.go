@@ -18,7 +18,6 @@ const interval = 15 * time.Millisecond
 const timeout = 500 * time.Millisecond
 
 func Transmitter(port int, id string, transmitEnable <-chan bool) {
-	fmt.Printf(("Transmitted"))
 	conn := conn.DialBroadcastUDP(port)
 	addr, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf("255.255.255.255:%d", port))
 
@@ -35,7 +34,6 @@ func Transmitter(port int, id string, transmitEnable <-chan bool) {
 }
 
 func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
-	fmt.Printf(("Received"))
 	var buf [1024]byte
 	var p PeerUpdate
 	lastSeen := make(map[string]time.Time)

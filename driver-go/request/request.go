@@ -8,10 +8,10 @@ import (
 )
 
 
-func RequestAbove(e elevator.Elevator) bool{
-	for floor := e.Floor+1; floor < config.NumFloors; floor++{
+func RequestAbove(elev elevator.Elevator) bool{
+	for floor := elev.Floor+1; floor < config.NumFloors; floor++{
 		for button := 0; button < config.NumButtons; button++{
-			if e.Requests[floor][button]{
+			if elev.Requests[floor][button]{
 				return true
 			}
 		}
@@ -19,10 +19,10 @@ func RequestAbove(e elevator.Elevator) bool{
 	return false
 }
 
-func RequestBelow(e elevator.Elevator)bool {
-	for floor := 0; floor < e.Floor; floor++{
-		for btn := range e.Requests[floor]{
-			if e.Requests[floor][btn]{
+func RequestBelow(elev elevator.Elevator)bool {
+	for floor := 0; floor < elev.Floor; floor++{
+		for btn := range elev.Requests[floor]{
+			if elev.Requests[floor][btn]{
 				return true
 			}
 		}
@@ -31,55 +31,55 @@ func RequestBelow(e elevator.Elevator)bool {
 }
 
 //Clears the requests at the current floor going in the same direction
-func RequestClearAtCurrentFloor(e *elevator.Elevator){
-	e.Requests[e.Floor][int(elevio.BT_Cab)] = false
+func RequestClearAtCurrentFloor(elev *elevator.Elevator){
+	elev.Requests[elev.Floor][int(elevio.BT_Cab)] = false
 	switch{
-	case e.Direction == elevio.MD_Up:
-		e.Requests[e.Floor][int(elevio.BT_HallUp)] = false
-		if !RequestAbove(*e){
-			e.Requests[e.Floor][int(elevio.BT_HallDown)] = false
+	case elev.Direction == elevio.MD_Up:
+		elev.Requests[elev.Floor][int(elevio.BT_HallUp)] = false
+		if !RequestAbove(*elev){
+			elev.Requests[elev.Floor][int(elevio.BT_HallDown)] = false
 		}
-	case e.Direction == elevio.MD_Down:
-		e.Requests[e.Floor][int(elevio.BT_HallDown)] = false
-		if !RequestBelow(*e){
-			e.Requests[e.Floor][int(elevio.BT_HallUp)] = false
+	case elev.Direction == elevio.MD_Down:
+		elev.Requests[elev.Floor][int(elevio.BT_HallDown)] = false
+		if !RequestBelow(*elev){
+			elev.Requests[elev.Floor][int(elevio.BT_HallUp)] = false
 		}
 	}
 }
 
 //Stop based on current floor and direction
-func RequestShouldStop(e *elevator.Elevator)bool {
+func RequestShouldStop(elev *elevator.Elevator)bool {
 	switch{
-	case e.Direction == elevio.MD_Down:
-		return e.Requests[e.Floor][int(elevio.BT_HallDown)] || e.Requests[e.Floor][int(elevio.BT_Cab)] || !RequestBelow(*e)
-	case e.Direction == elevio.MD_Up:
-		return e.Requests[e.Floor][int(elevio.BT_HallUp)] || e.Requests[e.Floor][int(elevio.BT_Cab)] || !RequestAbove(*e)
+	case elev.Direction == elevio.MD_Down:
+		return elev.Requests[elev.Floor][int(elevio.BT_HallDown)] || elev.Requests[elev.Floor][int(elevio.BT_Cab)] || !RequestBelow(*elev)
+	case elev.Direction == elevio.MD_Up:
+		return elev.Requests[elev.Floor][int(elevio.BT_HallUp)] || elev.Requests[elev.Floor][int(elevio.BT_Cab)] || !RequestAbove(*elev)
 	default:
 		return true
 	}
 }
 
 //Chooses direction based on the the requests made 
-func RequestChooseDirection(e *elevator.Elevator){
-	switch e.Direction{
+func RequestChooseDirection(elev *elevator.Elevator){
+	switch elev.Direction{
 	case elevio.MD_Up:
-		if RequestAbove(*e){
-			e.Direction = elevio.MD_Up
-		} else if RequestBelow(*e){
-			e.Direction = elevio.MD_Down
+		if RequestAbove(*elev){
+			elev.Direction = elevio.MD_Up
+		} else if RequestBelow(*elev){
+			elev.Direction = elevio.MD_Down
 		} else{
-			e.Direction = elevio.MD_Stop
+			elev.Direction = elevio.MD_Stop
 		}
 	case elevio.MD_Down:
 		fallthrough
 	
 	case elevio.MD_Stop:
-		if RequestBelow(*e){
-			e.Direction = elevio.MD_Down
-		} else if RequestAbove(*e){
-			e.Direction = elevio.MD_Up
+		if RequestBelow(*elev){
+			elev.Direction = elevio.MD_Down
+		} else if RequestAbove(*elev){
+			elev.Direction = elevio.MD_Up
 		} else{
-			e.Direction = elevio.MD_Stop
+			elev.Direction = elevio.MD_Stop
 		}
 	}
 
@@ -87,10 +87,10 @@ func RequestChooseDirection(e *elevator.Elevator){
 
 
 
-func RequestClearHall(e *elevator.Elevator){
+func RequestClearHall(elev *elevator.Elevator){
 	for floor := 0; floor < config.NumFloors; floor++{
 		for btn := 0; btn < config.NumButtons; btn++{
-			e.Requests[floor][btn] = false
+			elev.Requests[floor][btn] = false
 		}
 	}
 }

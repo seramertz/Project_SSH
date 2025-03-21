@@ -29,7 +29,7 @@ func ReassignOrders(elevators []*config.ElevatorDistributor, ch_newLocalOrder ch
 
 //Finds and returns the lowest ID of the elevators
 func findLowestID(elevators []*config.ElevatorDistributor) int {
-	lowID := 999
+	lowID := config.MaxCost
 	for _, elev := range elevators {
 		if elev.Behaviour != config.Unavailable {
 			ID, _ := strconv.Atoi(elev.ID)
@@ -47,7 +47,7 @@ func AssignOrder(elevators []*config.ElevatorDistributor, order elevio.ButtonEve
 		elevators[config.LocalElevator].Requests[order.Floor][order.Button] = config.Order
 		return
 	}
-	minCost := 99999
+	minCost := config.MaxAssignment
 	elevCost := 0
 	var minElev *config.ElevatorDistributor
 	for _, elev := range elevators {
