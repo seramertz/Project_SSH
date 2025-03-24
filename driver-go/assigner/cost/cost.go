@@ -19,7 +19,7 @@ func Cost(elev *config.ElevatorDistributor, req elevio.ButtonEvent) int {
 		switch e.Behaviour {
 		case config.Idle:
 			distributorRequestChooseDirection(e)
-			if e.Direction == config.Stop {
+			if e.Direction == elevio.MD_Stop {
 				return duration
 			}
 		case config.Moving:
@@ -34,7 +34,7 @@ func Cost(elev *config.ElevatorDistributor, req elevio.ButtonEvent) int {
 				distributorRequestClearAtCurrentFloor(e)
 				duration += config.DoorOpenDuration
 				distributorRequestChooseDirection(e)
-				if e.Direction == config.Stop {
+				if e.Direction == elevio.MD_Stop{
 					return duration
 				}
 			}
@@ -73,12 +73,12 @@ func distributorRequestsBelow(elev config.ElevatorDistributor) bool {
 func distributorRequestClearAtCurrentFloor(elev *config.ElevatorDistributor){
 	elev.Requests[elev.Floor][int(elevio.BT_Cab)] = config.None
 	switch {
-	case elev.Direction  == config.Up:
+	case elev.Direction  == elevio.MD_Up:
 		elev.Requests[elev.Floor][int(elevio.BT_HallUp)] = config.None
 		if !distributorRequestsAbove(*elev) {
 			elev.Requests[elev.Floor][int(elevio.BT_HallDown)] = config.None
 		}
-	case elev.Direction == config.Down:
+	case elev.Direction == elevio.MD_Down:
 		elev.Requests[elev.Floor][int(elevio.BT_HallDown)] = config.None
 		if !distributorRequestsBelow(*elev) {
 			elev.Requests[elev.Floor][int(elevio.BT_HallUp)] = config.None
@@ -88,11 +88,11 @@ func distributorRequestClearAtCurrentFloor(elev *config.ElevatorDistributor){
 
 func distributorRequestShouldStop(elev config.ElevatorDistributor) bool {
 	switch {
-	case elev.Direction  == config.Down:
+	case elev.Direction  == elevio.MD_Down:
 		return elev.Requests[elev.Floor][int(elevio.BT_HallDown)] == config.Confirmed ||
 			elev.Requests[elev.Floor][int(elevio.BT_Cab)] == config.Confirmed ||
 			!distributorRequestsBelow(elev)
-	case elev.Direction == config.Up:
+	case elev.Direction == elevio.MD_Up:
 		return elev.Requests[elev.Floor][int(elevio.BT_HallUp)] == config.Confirmed ||
 			elev.Requests[elev.Floor][int(elevio.BT_Cab)] == config.Confirmed ||
 			!distributorRequestsAbove(elev)
@@ -103,23 +103,23 @@ func distributorRequestShouldStop(elev config.ElevatorDistributor) bool {
 
 func distributorRequestChooseDirection(elev *config.ElevatorDistributor) {
 	switch elev.Direction{
-	case config.Up:
+	case elevio.MD_Up:
 		if distributorRequestsAbove(*elev) {
-			elev.Direction  = config.Up
+			elev.Direction  = elevio.MD_Up
 		} else if distributorRequestsBelow(*elev) {
-			elev.Direction = config.Down
+			elev.Direction = elevio.MD_Down
 		} else {
-			elev.Direction  = config.Stop
+			elev.Direction  = elevio.MD_Stop
 		}
-	case config.Down:
+	case elevio.MD_Down:
 		fallthrough
-	case config.Stop:
+	case elevio.MD_Stop:
 		if distributorRequestsBelow(*elev) {
-			elev.Direction = config.Down
+			elev.Direction = elevio.MD_Down
 		} else if distributorRequestsAbove(*elev) {
-			elev.Direction = config.Up
+			elev.Direction = elevio.MD_Up
 		} else {
-			elev.Direction = config.Stop
+			elev.Direction = elevio.MD_Stop
 		}
 	}
 }

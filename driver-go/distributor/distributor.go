@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-
 func elevatorDistributorInit(id string) config.ElevatorDistributor {
 	requests := make([][]config.RequestState, 4)
 	for floor := range requests {
@@ -18,7 +17,6 @@ func elevatorDistributorInit(id string) config.ElevatorDistributor {
 	return config.ElevatorDistributor{Requests: requests, ID: id, Floor: 0, Behaviour: config.Idle}
 
 }
-
 
 func Distributor(
 	id int,
@@ -99,10 +97,10 @@ func Distributor(
 			setElevatorLights(elevators, id)
 
 		case newState := <-ch_newLocalState: //Checks for state updates and updates the elevators state accordingly
-			if newState.Floor != elevators[config.LocalElevator].Floor || newState.Behave == config.Idle || newState.Behave == config.DoorOpen {
-				elevators[config.LocalElevator].Behaviour = config.Behaviour(int(newState.Behave))
+			if newState.Floor != elevators[config.LocalElevator].Floor || newState.Behaviour == config.Idle || newState.Behaviour == config.DoorOpen {
+				elevators[config.LocalElevator].Behaviour = config.Behaviour(int(newState.Behaviour))
 				elevators[config.LocalElevator].Floor = newState.Floor
-				elevators[config.LocalElevator].Direction = config.Direction(int(newState.Direction))
+				elevators[config.LocalElevator].Direction = elevio.MotorDirection(int(newState.Direction))
 				ch_watchdogStuckReset <- false
 			}
 			for floor := range elevators[config.LocalElevator].Requests {

@@ -5,7 +5,6 @@ import (
 	"Driver-go/elevio"
 )
 
-
 func InitElevator() config.Elevator {
 	requests := make([][]bool, 0)
 	for floor := 0; floor < config.NumFloors; floor++ {
@@ -22,7 +21,7 @@ func InitElevator() config.Elevator {
 		Floor:      elevio.GetFloor(),
 		Direction:  elevio.MD_Stop,
 		Requests:   requests,
-		Behave:     config.Idle,
+		Behaviour:  config.Idle,
 		TimerCount: 0,
 		Obstructed: false}
 }
@@ -34,4 +33,3 @@ func SetLocalLights(e config.Elevator) {
 		elevio.SetButtonLamp(elevio.ButtonType(elevio.BT_Cab), floor, e.Requests[floor][elevio.BT_Cab])
 	}
 }
-

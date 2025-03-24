@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-
 func Fsm(
 	ch_orderChannel chan elevio.ButtonEvent,
 	ch_elevatorState chan<- config.Elevator,
@@ -33,27 +32,27 @@ func Fsm(
 		select {
 		case order := <-ch_orderChannel: // Handles new order
 			switch {
-			case elev.Behave == config.DoorOpen:
+			case elev.Behaviour == config.DoorOpen:
 				if elev.Floor == order.Floor {
 					doorTimer.Reset(time.Duration(config.DoorOpenDuration) * time.Second)
 				} else {
 					elev.Requests[order.Floor][order.Button] = true
 				}
 
-			case elev.Behave == config.Moving:
+			case elev.Behaviour == config.Moving:
 				elev.Requests[order.Floor][order.Button] = true
 
-			case elev.Behave == config.Idle:
+			case elev.Behaviour == config.Idle:
 				if elev.Floor == order.Floor {
 					elevio.SetDoorOpenLamp(true)
 					doorTimer.Reset(time.Duration(config.DoorOpenDuration) * time.Second)
-					elev.Behave = config.DoorOpen
+					elev.Behaviour = config.DoorOpen
 					ch_elevatorState <- *elev
 				} else {
 					elev.Requests[order.Floor][order.Button] = true
 					request.RequestChooseDirection(elev)
 					elevio.SetMotorDirection(elev.Direction)
-					elev.Behave = config.Moving
+					elev.Behaviour = config.Moving
 					ch_elevatorState <- *elev
 					break
 				}
@@ -62,13 +61,13 @@ func Fsm(
 		case floor := <-ch_arrivedAtFloors: // Handles arriving at floor
 			elev.Floor = floor
 			switch {
-			case elev.Behave == config.Moving:
+			case elev.Behaviour == config.Moving:
 				if request.RequestShouldStop(elev) {
 					elevio.SetMotorDirection(elevio.MD_Stop)
 					request.RequestClearAtCurrentFloor(elev)
 					elevio.SetDoorOpenLamp(true)
 					doorTimer.Reset(time.Duration(config.DoorOpenDuration) * time.Second)
-					elev.Behave = config.DoorOpen
+					elev.Behaviour = config.DoorOpen
 					ch_elevatorState <- *elev
 				}
 			default:
@@ -78,7 +77,7 @@ func Fsm(
 
 		case <-doorTimer.C: // Handles door
 			switch {
-			case elev.Behave == config.DoorOpen:
+			case elev.Behaviour == config.DoorOpen:
 				if elev.Obstructed {
 					elevio.SetMotorDirection(elevio.MD_Stop)
 					doorTimer.Stop()
@@ -87,10 +86,10 @@ func Fsm(
 					elevio.SetMotorDirection(elev.Direction)
 					elevio.SetDoorOpenLamp(false)
 					if elev.Direction == elevio.MD_Stop {
-						elev.Behave = config.Idle
+						elev.Behaviour = config.Idle
 						ch_elevatorState <- *elev
 					} else {
-						elev.Behave = config.Moving
+						elev.Behaviour = config.Moving
 						ch_elevatorState <- *elev
 					}
 				}

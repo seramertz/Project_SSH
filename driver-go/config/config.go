@@ -1,6 +1,6 @@
 package config
 
-import(
+import (
 	"Driver-go/elevio"
 )
 
@@ -19,7 +19,7 @@ type Elevator struct {
 	Floor      int
 	Direction  elevio.MotorDirection
 	Requests   [][]bool
-	Behave     Behaviour
+	Behaviour  Behaviour
 	TimerCount int
 	Obstructed bool
 }
@@ -66,7 +66,7 @@ type Requests struct {
 type ElevatorDistributor struct {
 	ID        string
 	Floor     int
-	Direction Direction
+	Direction elevio.MotorDirection
 	Requests  [][]RequestState
 	Behaviour Behaviour
 }
@@ -81,5 +81,5 @@ type CostRequest struct {
 const (
 	MaxCost       = 999
 	MaxAssignment = 99999
-	TravelTime = 10
+	TravelTime    = 10
 )
