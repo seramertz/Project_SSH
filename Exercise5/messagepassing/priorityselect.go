@@ -55,6 +55,9 @@ func resourceManager(takeLow chan Resource, takeHigh chan Resource, giveBack cha
             sendLow = takeLow
         default: 
             select{
+            case sendHigh <- res:
+                sendHigh = nil
+                sendLow = nil
             case sendLow <- res:
                 sendHigh = nil
                 sendLow = nil

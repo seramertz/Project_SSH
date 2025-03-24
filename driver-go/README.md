@@ -9,9 +9,23 @@ Add the portnumber and desired id to the elevator
 
 Running just "go run main.go" starts an elevator with default port = 15657 and id=0
 
+To change the amount of elevators or floors go to config and assign the wanted numbers. 
+
+Summary
+======================
+This project contains software for controlling 'n' elevators actross 'm' floors. It is a peer-to-peer system with a fleeting master and UDP communication protocol. 
+
+Modules
+======
+
 Elevio: 
 ---
 Responsible for interfacing with the elevator hardware. It provides functions to control the elevator system. 
+
+---
+Elevator: 
+---
+Manages the states and behaviour of a single elevator. 
 
 ---
 FSM:
@@ -39,11 +53,6 @@ Monitors the elevator system for signs of a stuck elevator.
 Assigner: 
 ---
 Assigns orders to the different elevators by using the cost function. It also helps reassign orders if an elevator is lost. 
-
----
-Elevator: 
----
-Manages the states and behaviour of a single elevator. 
 
 ---
 Network: 

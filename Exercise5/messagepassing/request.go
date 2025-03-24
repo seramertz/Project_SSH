@@ -60,9 +60,9 @@ func resourceManager(askFor chan ResourceRequest, giveBack chan Resource){
                 queue.PopFront()
                 req.channel <-res
             }
-            fmt.Printf("[resource manager]: received request: %+v\n", request)
+            //fmt.Printf("[resource manager]: received request: %+v\n", request)
         case res = <-giveBack:
-            fmt.Printf("[resource manager]: resource returned\n")
+            //fmt.Printf("[resource manager]: resource returned\n")
             busy = false
             if !queue.Empty(){
                 busy = true

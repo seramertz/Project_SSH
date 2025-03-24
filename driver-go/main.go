@@ -58,7 +58,13 @@ func main() {
 	go elevio.PollButtons(ch_newLocalOrder)
 
 	//Single elevator fsm
-	go fsm.Fsm(ch_orderToLocal, ch_newLocalState, ch_clearLocalHallOrders, ch_arrivedAtFloors, ch_obstruction, ch_timerDoor)
+	go fsm.Fsm(
+		ch_orderToLocal, 
+		ch_newLocalState, 
+		ch_clearLocalHallOrders, 
+		ch_arrivedAtFloors, 
+		ch_obstruction, 
+		ch_timerDoor)
 
 	//Set up newtork communication for broadcasting and peer updates
 	go bcast.Transmitter(config.NumBcastPort, ch_msgToNetwork)
@@ -68,8 +74,17 @@ func main() {
 
 	go watchdog.Watchdog(config.ElevatorStuckTol, ch_watchdogStuckReset, ch_watchdogStuckSignal)
 
-	go distributor.Distributor(id, ch_newLocalOrder, ch_newLocalState, ch_msgFromNetwork, ch_msgToNetwork, ch_orderToLocal, ch_peerUpdate, ch_watchdogStuckReset, ch_watchdogStuckSignal, ch_clearLocalHallOrders)
+	go distributor.Distributor(
+		id, 
+		ch_newLocalOrder, 
+		ch_newLocalState, 
+		ch_msgFromNetwork, 
+		ch_msgToNetwork, 
+		ch_orderToLocal, 
+		ch_peerUpdate, 
+		ch_watchdogStuckReset, 
+		ch_watchdogStuckSignal, 
+		ch_clearLocalHallOrders)
+
 	select {}
 }
-
-//Gruppere network og distribtor channels eller ikke? network i initialize network funksjon
