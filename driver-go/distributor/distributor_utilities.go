@@ -3,40 +3,39 @@ package distributor
 import (
 	"Driver-go/config"
 	"Driver-go/elevio"
-	"time"
 	"strconv"
+	"time"
 )
 
+//Utility functions used by the distributor for elevator updates and communication
 
-// Broadcast the current state of all elevators to a specified channel
-func broadcastElevState(elevators []*config.ElevatorDistributor, ch_transmit chan <- []config.ElevatorDistributor){
+func broadcastElevatorState(elevators []*config.ElevatorDistributor, ch_transmit chan<- []config.ElevatorDistributor) {
 	temporaryElevators := make([]config.ElevatorDistributor, 0)
-	for _, elevator := range elevators{
+	for _, elevator := range elevators {
 		temporaryElevators = append(temporaryElevators, *elevator)
 	}
 	ch_transmit <- temporaryElevators
-	time.Sleep(25*time.Millisecond)
+	time.Sleep(25 * time.Millisecond)
 }
 
 
-// Reinitializes an elevator with a given ID
 func reinitializeElevator(elevators []*config.ElevatorDistributor, id int) {
-    for _, elev := range elevators {
-        if elev.ID == strconv.Itoa(id) {
-            *elev = elevatorDistributorInit(strconv.Itoa(id))
-            break
-        }
-    }
+	for _, elev := range elevators {
+		if elev.ID == strconv.Itoa(id) {
+			*elev = elevatorDistributorInit(strconv.Itoa(id))
+			break
+		}
+	}
 }
 
-// Update state of local elevator based on new elevator states 
-func updateElevators(elevators []*config.ElevatorDistributor, newElevators []config.ElevatorDistributor){
-	if elevators[config.LocalElevator].ID != newElevators[config.LocalElevator].ID{
-		for _,elev := range elevators{
-			if elev.ID == newElevators[config.LocalElevator].ID{
-				for floor := range elev.Requests{
-					for button := range elev.Requests[floor]{
-						if !(elev.Requests[floor][button] == config.Confirmed && newElevators[config.LocalElevator].Requests[floor][button] == config.Order){
+
+func updateElevators(elevators []*config.ElevatorDistributor, newElevators []config.ElevatorDistributor) {
+	if elevators[config.LocalElevator].ID != newElevators[config.LocalElevator].ID {
+		for _, elev := range elevators {
+			if elev.ID == newElevators[config.LocalElevator].ID {
+				for floor := range elev.Requests {
+					for button := range elev.Requests[floor] {
+						if !(elev.Requests[floor][button] == config.Confirmed && newElevators[config.LocalElevator].Requests[floor][button] == config.Order) {
 							elev.Requests[floor][button] = newElevators[config.LocalElevator].Requests[floor][button]
 						}
 						elev.Floor = newElevators[config.LocalElevator].Floor
@@ -46,12 +45,12 @@ func updateElevators(elevators []*config.ElevatorDistributor, newElevators []con
 				}
 			}
 		}
-		for _, newElev := range newElevators{
-			if newElev.ID == elevators[config.LocalElevator].ID{
-				for floor := range newElev.Requests{
-					for button := range newElev.Requests[floor]{
+		for _, newElev := range newElevators {
+			if newElev.ID == elevators[config.LocalElevator].ID {
+				for floor := range newElev.Requests {
+					for button := range newElev.Requests[floor] {
 						if (elevators[config.LocalElevator].Behaviour != config.Unavailable) &&
-							(newElev.Requests[floor][button] == config.Order){
+							(newElev.Requests[floor][button] == config.Order) {
 							(*elevators[config.LocalElevator]).Requests[floor][button] = config.Order
 						}
 					}
@@ -61,42 +60,40 @@ func updateElevators(elevators []*config.ElevatorDistributor, newElevators []con
 	}
 }
 
-// Add a new elevator to the network
-func addNewElevator (elevators *[]* config.ElevatorDistributor, newElevator config.ElevatorDistributor) {
+
+func addNewElevator(elevators *[]*config.ElevatorDistributor, newElevator config.ElevatorDistributor) {
 	tempElev := new(config.ElevatorDistributor)
 	*tempElev = elevatorDistributorInit(newElevator.ID)
 	(*tempElev).Behaviour = newElevator.Behaviour
 	(*tempElev).Direction = newElevator.Direction
 	(*tempElev).Floor = newElevator.Floor
-	
-	for floor := range tempElev.Requests{
-		for button := range tempElev.Requests[floor]{
+
+	for floor := range tempElev.Requests {
+		for button := range tempElev.Requests[floor] {
 			tempElev.Requests[floor][button] = newElevator.Requests[floor][button]
 		}
 	}
 	*elevators = append(*elevators, tempElev)
 }
 
-	
-// Set all lights in the elevators according to the requests
+
 func setElevatorLights(elevators []*config.ElevatorDistributor, elevatorID int) {
-	for button := 0 ; button < config.NumButtons -1; button++{
-		for floor := 0 ; floor < config.NumFloors ; floor++{
+	for button := 0; button < config.NumButtons-1; button++ {
+		for floor := 0; floor < config.NumFloors; floor++ {
 			isLight := false
-			for _, elev := range elevators{
-				if elev.Requests[floor][button] == config.Confirmed{
+			for _, elev := range elevators {
+				if elev.Requests[floor][button] == config.Confirmed {
 					isLight = true
 				}
 			}
 			elevio.SetButtonLamp(elevio.ButtonType(button), floor, isLight)
 		}
 	}
-	for floor := 0; floor < config.NumFloors; floor++{
-		for _,elev := range elevators{
-			if elev.ID == strconv.Itoa(elevatorID) && elev.Requests[floor][elevio.BT_Cab] == config.Confirmed{
+	for floor := 0; floor < config.NumFloors; floor++ {
+		for _, elev := range elevators {
+			if elev.ID == strconv.Itoa(elevatorID) && elev.Requests[floor][elevio.BT_Cab] == config.Confirmed {
 				elevio.SetButtonLamp(elevio.BT_Cab, floor, true)
 			}
 		}
 	}
 }
-	

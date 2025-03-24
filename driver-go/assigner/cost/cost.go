@@ -5,8 +5,6 @@ import (
 	"Driver-go/elevio"
 )
 
-const TRAVEL_TIME = 10
-const NumElevators = 4
 
 // Cost function that calculates the cost of assigning an order to an elevator
 func Cost(elev *config.ElevatorDistributor, req elevio.ButtonEvent) int {
@@ -25,7 +23,7 @@ func Cost(elev *config.ElevatorDistributor, req elevio.ButtonEvent) int {
 				return duration
 			}
 		case config.Moving:
-			duration += TRAVEL_TIME / 2
+			duration += config.TravelTime / 2
 			e.Floor += int(e.Direction)
 		case config.DoorOpen:
 			duration -= config.DoorOpenDuration / 2
@@ -41,7 +39,7 @@ func Cost(elev *config.ElevatorDistributor, req elevio.ButtonEvent) int {
 				}
 			}
 			e.Floor += int(e.Direction)
-			duration += TRAVEL_TIME
+			duration += config.TravelTime
 		}
 	}
 	return highestDuration
@@ -49,6 +47,7 @@ func Cost(elev *config.ElevatorDistributor, req elevio.ButtonEvent) int {
 
 
 //Request functions for elevator distributor object
+
 func distributorRequestsAbove(elev config.ElevatorDistributor) bool {
 	for f := elev.Floor + 1; f < config.NumFloors; f++ {
 		for btn := range elev.Requests[f] {

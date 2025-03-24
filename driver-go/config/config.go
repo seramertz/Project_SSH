@@ -1,5 +1,9 @@
 package config
 
+import(
+	"Driver-go/elevio"
+)
+
 const NumFloors = 4
 const NumButtons = 3
 const NumElevators = 3
@@ -11,6 +15,14 @@ const ReconnectTimer = 3
 const NumPeerPort = 45678
 const NumBcastPort = 45680
 
+type Elevator struct {
+	Floor      int
+	Direction  elevio.MotorDirection
+	Requests   [][]bool
+	Behave     Behaviour
+	TimerCount int
+	Obstructed bool
+}
 
 type Direction int
 
@@ -69,4 +81,5 @@ type CostRequest struct {
 const (
 	MaxCost       = 999
 	MaxAssignment = 99999
+	TravelTime = 10
 )

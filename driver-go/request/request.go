@@ -3,12 +3,11 @@ package request
 
 import (
 	"Driver-go/config"
-	"Driver-go/elevator"
 	"Driver-go/elevio"
 )
 
 
-func RequestAbove(elev elevator.Elevator) bool{
+func RequestAbove(elev config.Elevator) bool{
 	for floor := elev.Floor+1; floor < config.NumFloors; floor++{
 		for button := 0; button < config.NumButtons; button++{
 			if elev.Requests[floor][button]{
@@ -19,7 +18,7 @@ func RequestAbove(elev elevator.Elevator) bool{
 	return false
 }
 
-func RequestBelow(elev elevator.Elevator)bool {
+func RequestBelow(elev config.Elevator)bool {
 	for floor := 0; floor < elev.Floor; floor++{
 		for btn := range elev.Requests[floor]{
 			if elev.Requests[floor][btn]{
@@ -30,8 +29,8 @@ func RequestBelow(elev elevator.Elevator)bool {
 	return false
 }
 
-//Clears the requests at the current floor going in the same direction
-func RequestClearAtCurrentFloor(elev *elevator.Elevator){
+// Clears the requests at the current floor going in the same direction
+func RequestClearAtCurrentFloor(elev *config.Elevator){
 	elev.Requests[elev.Floor][int(elevio.BT_Cab)] = false
 	switch{
 	case elev.Direction == elevio.MD_Up:
@@ -47,8 +46,8 @@ func RequestClearAtCurrentFloor(elev *elevator.Elevator){
 	}
 }
 
-//Stop based on current floor and direction
-func RequestShouldStop(elev *elevator.Elevator)bool {
+// Stop based on current floor and direction
+func RequestShouldStop(elev *config.Elevator)bool {
 	switch{
 	case elev.Direction == elevio.MD_Down:
 		return elev.Requests[elev.Floor][int(elevio.BT_HallDown)] || elev.Requests[elev.Floor][int(elevio.BT_Cab)] || !RequestBelow(*elev)
@@ -59,8 +58,8 @@ func RequestShouldStop(elev *elevator.Elevator)bool {
 	}
 }
 
-//Chooses direction based on the the requests made 
-func RequestChooseDirection(elev *elevator.Elevator){
+
+func RequestChooseDirection(elev *config.Elevator){
 	switch elev.Direction{
 	case elevio.MD_Up:
 		if RequestAbove(*elev){
@@ -87,7 +86,7 @@ func RequestChooseDirection(elev *elevator.Elevator){
 
 
 
-func RequestClearHall(elev *elevator.Elevator){
+func RequestClearHall(elev *config.Elevator){
 	for floor := 0; floor < config.NumFloors; floor++{
 		for btn := 0; btn < config.NumButtons; btn++{
 			elev.Requests[floor][btn] = false
