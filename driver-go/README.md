@@ -15,8 +15,6 @@ Summary
 ======================
 This project contains software for controlling 'n' elevators actross 'm' floors. It is a peer-to-peer system with a fleeting master and UDP communication protocol. 
 
-Modules
-======
 
 Elevio: 
 ---
