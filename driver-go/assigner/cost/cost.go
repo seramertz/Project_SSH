@@ -87,13 +87,9 @@ func distributorRequestClearAtCurrentFloor(elev *config.ElevatorDistributor) {
 func distributorRequestShouldStop(elev config.ElevatorDistributor) bool {
 	switch {
 	case elev.Direction == config.Down:
-		return (elev.Requests[elev.Floor][int(elevio.BT_HallDown)] == config.Confirmed) ||
-			(elev.Requests[elev.Floor][int(elevio.BT_Cab)] == config.Confirmed) ||
-			(!distributorRequestsBelow(elev))
+		return (elev.Requests[elev.Floor][int(elevio.BT_HallDown)] == config.Confirmed) || (elev.Requests[elev.Floor][int(elevio.BT_Cab)] == config.Confirmed) || (!distributorRequestsBelow(elev))
 	case elev.Direction == config.Up:
-		return elev.Requests[elev.Floor][int(elevio.BT_HallUp)] == config.Confirmed ||
-			elev.Requests[elev.Floor][int(elevio.BT_Cab)] == config.Confirmed ||
-			!distributorRequestsAbove(elev)
+		return elev.Requests[elev.Floor][int(elevio.BT_HallUp)] == config.Confirmed || elev.Requests[elev.Floor][int(elevio.BT_Cab)] == config.Confirmed || !distributorRequestsAbove(elev)
 	default:
 		return true
 	}

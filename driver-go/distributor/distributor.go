@@ -43,11 +43,8 @@ func Distributor(
 		for _, elev := range newElevators {
 			if elev.ID == elevators[config.LocalElevator].ID {
 				for floor := range elev.Requests {
-					if elev.Requests[floor][config.Cab] == config.Confirmed ||
-						elev.Requests[floor][config.Cab] == config.Order {
-						ch_newLocalOrder <- elevio.ButtonEvent{
-							Floor:  floor,
-							Button: elevio.ButtonType(int(config.Cab))}
+					if elev.Requests[floor][config.Cab] == config.Confirmed || elev.Requests[floor][config.Cab] == config.Order {
+						ch_newLocalOrder <- elevio.ButtonEvent{Floor: floor, Button: elevio.ButtonType(int(config.Cab))}
 					}
 				}
 			}
@@ -88,6 +85,7 @@ func Distributor(
 				ch_orderToLocal <- tempOrder
 				broadcastElevatorState(elevators, ch_msgToNetwork)
 			}
+
 		case newOrder := <-ch_newLocalOrder: //Checks for new orders and assignes these to an elevator
 			assigner.AssignOrder(elevators, newOrder)
 			if elevators[config.LocalElevator].Requests[newOrder.Floor][newOrder.Button] == config.Order {
@@ -100,9 +98,7 @@ func Distributor(
 			setElevatorLights(elevators, id)
 
 		case newState := <-ch_newLocalState: //Checks for state updates and updates the elevators state accordingly
-			if newState.Floor != elevators[config.LocalElevator].Floor ||
-				newState.Behaviour == config.Idle ||
-				newState.Behaviour == config.DoorOpen {
+			if newState.Floor != elevators[config.LocalElevator].Floor || newState.Behaviour == config.Idle || newState.Behaviour == config.DoorOpen {
 
 				elevators[config.LocalElevator].Behaviour = config.Behaviour(int(newState.Behaviour))
 				elevators[config.LocalElevator].Floor = newState.Floor
@@ -111,14 +107,11 @@ func Distributor(
 			}
 			for floor := range elevators[config.LocalElevator].Requests {
 				for button := range elevators[config.LocalElevator].Requests[floor] {
-					if !newState.Requests[floor][button] &&
-						elevators[config.LocalElevator].Requests[floor][button] == config.Confirmed {
+					if !newState.Requests[floor][button] && elevators[config.LocalElevator].Requests[floor][button] == config.Confirmed {
 
 						elevators[config.LocalElevator].Requests[floor][button] = config.Complete
 					}
-					if elevators[config.LocalElevator].Behaviour != config.Unavailable &&
-						newState.Requests[floor][button] &&
-						elevators[config.LocalElevator].Requests[floor][button] != config.Confirmed {
+					if elevators[config.LocalElevator].Behaviour != config.Unavailable && newState.Requests[floor][button] && elevators[config.LocalElevator].Requests[floor][button] != config.Confirmed {
 
 						elevators[config.LocalElevator].Requests[floor][button] = config.Confirmed
 					}

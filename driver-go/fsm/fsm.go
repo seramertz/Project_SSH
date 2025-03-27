@@ -9,12 +9,12 @@ import (
 )
 
 func Fsm(
-	ch_orderChannel         chan elevio.ButtonEvent,
-	ch_elevatorState        chan<- config.Elevator,
+	ch_orderChannel chan elevio.ButtonEvent,
+	ch_elevatorState chan<- config.Elevator,
 	ch_clearLocalHallOrders chan bool,
-	ch_arrivedAtFloors      chan int,
-	ch_obstruction          chan bool,
-	ch_timerDoor            chan bool) {
+	ch_arrivedAtFloors chan int,
+	ch_obstruction chan bool,
+	ch_timerDoor chan bool) {
 
 	e := elevator.InitElevator()
 	elev := &e
@@ -41,7 +41,6 @@ func Fsm(
 
 			case elev.Behaviour == config.Moving:
 				elev.Requests[order.Floor][order.Button] = true
-
 			case elev.Behaviour == config.Idle:
 				if elev.Floor == order.Floor {
 					elevio.SetDoorOpenLamp(true)
