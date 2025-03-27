@@ -18,7 +18,6 @@ func broadcastElevatorState(elevators []*config.ElevatorDistributor, ch_transmit
 	time.Sleep(25 * time.Millisecond)
 }
 
-
 func reinitializeElevator(elevators []*config.ElevatorDistributor, id int) {
 	for _, elev := range elevators {
 		if elev.ID == strconv.Itoa(id) {
@@ -28,15 +27,14 @@ func reinitializeElevator(elevators []*config.ElevatorDistributor, id int) {
 	}
 }
 
-
 func updateElevators(elevators []*config.ElevatorDistributor, newElevators []config.ElevatorDistributor) {
 	if elevators[config.LocalElevator].ID != newElevators[config.LocalElevator].ID {
 		for _, elev := range elevators {
 			if elev.ID == newElevators[config.LocalElevator].ID {
 				for floor := range elev.Requests {
 					for button := range elev.Requests[floor] {
-						if !(elev.Requests[floor][button] == config.Confirmed 
-							&& newElevators[config.LocalElevator].Requests[floor][button] == config.Order) {
+						if !(elev.Requests[floor][button] == config.Confirmed &&
+							newElevators[config.LocalElevator].Requests[floor][button] == config.Order) {
 
 							elev.Requests[floor][button] = newElevators[config.LocalElevator].Requests[floor][button]
 						}
@@ -63,7 +61,6 @@ func updateElevators(elevators []*config.ElevatorDistributor, newElevators []con
 	}
 }
 
-
 func addNewElevator(elevators *[]*config.ElevatorDistributor, newElevator config.ElevatorDistributor) {
 	tempElev := new(config.ElevatorDistributor)
 	*tempElev = elevatorDistributorInit(newElevator.ID)
@@ -79,7 +76,6 @@ func addNewElevator(elevators *[]*config.ElevatorDistributor, newElevator config
 	*elevators = append(*elevators, tempElev)
 }
 
-
 func setElevatorLights(elevators []*config.ElevatorDistributor, elevatorID int) {
 	for button := 0; button < config.NumButtons-1; button++ {
 		for floor := 0; floor < config.NumFloors; floor++ {
@@ -94,8 +90,8 @@ func setElevatorLights(elevators []*config.ElevatorDistributor, elevatorID int) 
 	}
 	for floor := 0; floor < config.NumFloors; floor++ {
 		for _, elev := range elevators {
-			if elev.ID == strconv.Itoa(elevatorID) 
-			&& elev.Requests[floor][elevio.BT_Cab] == config.Confirmed {
+			if elev.ID == strconv.Itoa(elevatorID) &&
+				elev.Requests[floor][elevio.BT_Cab] == config.Confirmed {
 				elevio.SetButtonLamp(elevio.BT_Cab, floor, true)
 			}
 		}

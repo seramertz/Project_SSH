@@ -1,8 +1,8 @@
 package assigner
 
 import (
-	"Driver-go/config"
 	"Driver-go/assigner/cost"
+	"Driver-go/config"
 	"Driver-go/elevio"
 	"strconv"
 )
@@ -14,12 +14,12 @@ func ReassignOrders(elevators []*config.ElevatorDistributor, ch_newLocalOrder ch
 		if elev.Behaviour == config.Unavailable {
 			for floor := range elev.Requests {
 				for button := 0; button < len(elev.Requests[floor])-1; button++ {
-					if (elev.Requests[floor][button] == config.Order 
-						|| elev.Requests[floor][button] == config.Confirmed ) 
-						&& (elevators[config.LocalElevator].ID == strconv.Itoa(lowestID)){
-							ch_newLocalOrder <- elevio.ButtonEvent{
-								Floor:  floor,
-								Button: elevio.ButtonType(button)}
+					if (elev.Requests[floor][button] == config.Order ||
+						elev.Requests[floor][button] == config.Confirmed) &&
+						(elevators[config.LocalElevator].ID == strconv.Itoa(lowestID)) {
+						ch_newLocalOrder <- elevio.ButtonEvent{
+							Floor:  floor,
+							Button: elevio.ButtonType(button)}
 					}
 				}
 			}
@@ -27,7 +27,7 @@ func ReassignOrders(elevators []*config.ElevatorDistributor, ch_newLocalOrder ch
 	}
 }
 
-//Finds and returns the lowest ID of the elevators
+// Finds and returns the lowest ID of the elevators
 func findLowestID(elevators []*config.ElevatorDistributor) int {
 	lowID := config.MaxCost
 	for _, elev := range elevators {
@@ -42,7 +42,7 @@ func findLowestID(elevators []*config.ElevatorDistributor) int {
 }
 
 // Assignes new order to the right elevator depending on a cost function.
-func AssignOrder(elevators []*config.ElevatorDistributor, order elevio.ButtonEvent){
+func AssignOrder(elevators []*config.ElevatorDistributor, order elevio.ButtonEvent) {
 	if len(elevators) < 2 || order.Button == elevio.BT_Cab {
 		elevators[config.LocalElevator].Requests[order.Floor][order.Button] = config.Order
 		return
@@ -61,11 +61,11 @@ func AssignOrder(elevators []*config.ElevatorDistributor, order elevio.ButtonEve
 }
 
 // Remove completed orders from the elevator
-func RemoveCompletedOrders(elevators []*config.ElevatorDistributor){
-	for _, elev := range elevators{
-		for floor := range elev.Requests{
-			for button := range elev.Requests[floor]{
-				if elev.Requests[floor][button] == config.Complete{
+func RemoveCompletedOrders(elevators []*config.ElevatorDistributor) {
+	for _, elev := range elevators {
+		for floor := range elev.Requests {
+			for button := range elev.Requests[floor] {
+				if elev.Requests[floor][button] == config.Complete {
 					elev.Requests[floor][button] = config.None
 				}
 			}
@@ -74,19 +74,18 @@ func RemoveCompletedOrders(elevators []*config.ElevatorDistributor){
 }
 
 // Extracts a new order from the elevator
-func ConfirmedNewOrder(elev *config.ElevatorDistributor) *config.Requests{
+func ConfirmedNewOrder(elev *config.ElevatorDistributor) *config.Requests {
 	for floor := range elev.Requests {
-		for button := 0 ; button < len(elev.Requests[floor]); button++{
-			if elev.Requests[floor][button] == config.Order{
-				elev.Requests[floor][button] = config.Confirmed 
+		for button := 0; button < len(elev.Requests[floor]); button++ {
+			if elev.Requests[floor][button] == config.Order {
+				elev.Requests[floor][button] = config.Confirmed
 				tempOrder := new(config.Requests)
 				*tempOrder = config.Requests{
-					Floor: floor,
+					Floor:  floor,
 					Button: config.ButtonType(button)}
-					return tempOrder
-				}
+				return tempOrder
 			}
 		}
-		return nil
+	}
+	return nil
 }
-	
