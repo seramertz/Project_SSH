@@ -66,7 +66,7 @@ type Requests struct {
 type ElevatorDistributor struct {
 	ID        string
 	Floor     int
-	Direction elevio.MotorDirection
+	Direction Direction
 	Requests  [][]RequestState
 	Behaviour Behaviour
 }

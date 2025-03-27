@@ -35,7 +35,9 @@ func updateElevators(elevators []*config.ElevatorDistributor, newElevators []con
 			if elev.ID == newElevators[config.LocalElevator].ID {
 				for floor := range elev.Requests {
 					for button := range elev.Requests[floor] {
-						if !(elev.Requests[floor][button] == config.Confirmed && newElevators[config.LocalElevator].Requests[floor][button] == config.Order) {
+						if !(elev.Requests[floor][button] == config.Confirmed 
+							&& newElevators[config.LocalElevator].Requests[floor][button] == config.Order) {
+
 							elev.Requests[floor][button] = newElevators[config.LocalElevator].Requests[floor][button]
 						}
 						elev.Floor = newElevators[config.LocalElevator].Floor
@@ -51,6 +53,7 @@ func updateElevators(elevators []*config.ElevatorDistributor, newElevators []con
 					for button := range newElev.Requests[floor] {
 						if (elevators[config.LocalElevator].Behaviour != config.Unavailable) &&
 							(newElev.Requests[floor][button] == config.Order) {
+
 							(*elevators[config.LocalElevator]).Requests[floor][button] = config.Order
 						}
 					}
@@ -91,7 +94,8 @@ func setElevatorLights(elevators []*config.ElevatorDistributor, elevatorID int) 
 	}
 	for floor := 0; floor < config.NumFloors; floor++ {
 		for _, elev := range elevators {
-			if elev.ID == strconv.Itoa(elevatorID) && elev.Requests[floor][elevio.BT_Cab] == config.Confirmed {
+			if elev.ID == strconv.Itoa(elevatorID) 
+			&& elev.Requests[floor][elevio.BT_Cab] == config.Confirmed {
 				elevio.SetButtonLamp(elevio.BT_Cab, floor, true)
 			}
 		}

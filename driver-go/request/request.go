@@ -50,9 +50,13 @@ func RequestClearAtCurrentFloor(elev *config.Elevator){
 func RequestShouldStop(elev *config.Elevator)bool {
 	switch{
 	case elev.Direction == elevio.MD_Down:
-		return elev.Requests[elev.Floor][int(elevio.BT_HallDown)] || elev.Requests[elev.Floor][int(elevio.BT_Cab)] || !RequestBelow(*elev)
+		return elev.Requests[elev.Floor][int(elevio.BT_HallDown)] 
+		|| elev.Requests[elev.Floor][int(elevio.BT_Cab)] 
+		|| !RequestBelow(*elev)
 	case elev.Direction == elevio.MD_Up:
-		return elev.Requests[elev.Floor][int(elevio.BT_HallUp)] || elev.Requests[elev.Floor][int(elevio.BT_Cab)] || !RequestAbove(*elev)
+		return elev.Requests[elev.Floor][int(elevio.BT_HallUp)] 
+		|| elev.Requests[elev.Floor][int(elevio.BT_Cab)] 
+		|| !RequestAbove(*elev)
 	default:
 		return true
 	}
