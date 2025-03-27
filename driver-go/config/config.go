@@ -15,13 +15,21 @@ const ReconnectTimer = 3
 const NumPeerPort = 45678
 const NumBcastPort = 45680
 
+type localBehaviour int
+
+const (
+	ElevIdle localBehaviour = iota
+	ElevDoorOpen
+	ElevMoving
+)
+
 type Elevator struct {
-	Floor      int
-	Direction  elevio.MotorDirection
-	Requests   [][]bool
-	Behaviour  Behaviour
-	TimerCount int
-	Obstructed bool
+	Floor          int
+	Direction      elevio.MotorDirection
+	Requests       [][]bool
+	LocalBehaviour localBehaviour
+	TimerCount     int
+	Obstructed     bool
 }
 
 type Direction int

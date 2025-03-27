@@ -98,9 +98,9 @@ func Distributor(
 			setElevatorLights(elevators, id)
 
 		case newState := <-ch_newLocalState: //Checks for state updates and updates the elevators state accordingly
-			if newState.Floor != elevators[config.LocalElevator].Floor || newState.Behaviour == config.Idle || newState.Behaviour == config.DoorOpen {
+			if newState.Floor != elevators[config.LocalElevator].Floor || newState.LocalBehaviour == config.ElevIdle || newState.LocalBehaviour == config.ElevDoorOpen {
 
-				elevators[config.LocalElevator].Behaviour = config.Behaviour(int(newState.Behaviour))
+				elevators[config.LocalElevator].Behaviour = config.Behaviour(int(newState.LocalBehaviour))
 				elevators[config.LocalElevator].Floor = newState.Floor
 				elevators[config.LocalElevator].Direction = config.Direction(int(newState.Direction))
 				ch_watchdogStuckReset <- false

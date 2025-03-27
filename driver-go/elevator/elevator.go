@@ -18,12 +18,12 @@ func InitElevator() config.Elevator {
 	}
 	elevio.SetMotorDirection(elevio.MD_Stop)
 	return config.Elevator{
-		Floor:      elevio.GetFloor(),
-		Direction:  elevio.MD_Stop,
-		Requests:   requests,
-		Behaviour:  config.Idle,
-		TimerCount: 0,
-		Obstructed: false}
+		Floor:          elevio.GetFloor(),
+		Direction:      elevio.MD_Stop,
+		Requests:       requests,
+		LocalBehaviour: config.ElevIdle,
+		TimerCount:     0,
+		Obstructed:     false}
 }
 
 // Set local elevtor lights and floor indicators
