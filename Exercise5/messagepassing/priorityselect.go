@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 
 const tick = time.Millisecond * 33
@@ -38,47 +40,60 @@ type Resource struct {
 
 func resourceManager(takeLow chan Resource, takeHigh chan Resource, giveBack chan Resource){
 
-    //res := Resource{}
-    //resourceArrived := true
-    var res Resource
-    sendHigh := takeHigh
-    sendLow := takeLow
+    res := Resource{}
     
     for {
+    select{
+    case takeHigh <-res:
+    default:
         select{
-        case sendHigh <- res:
-            sendHigh = nil
-            sendLow = nil
-        case r := <-giveBack:
-            res = r
-            sendHigh = takeHigh
-            sendLow = takeLow
-        default: 
-            select{
-            case sendHigh <- res:
-                sendHigh = nil
-                sendLow = nil
-            case sendLow <- res:
-                sendHigh = nil
-                sendLow = nil
-            case r := <-giveBack:
-                res = r
-                sendHigh = takeHigh
-                sendLow = takeLow
-
-            default: 
-            time.Sleep(5 * time.Millisecond)
-            }
-            
-        }
-        if sendHigh == nil && sendLow == nil {
-            r := <-giveBack
-            res = r
-            sendHigh = takeHigh
-            sendLow = takeLow
+        case takeHigh <- res:
+        case takeLow <- res:
         }
     }
+    res = <- giveBack
+    }
 }
+
+    // var res Resource
+    // sendHigh := takeHigh
+    // sendLow := takeLow
+    
+    // for {
+    //     select{
+    //     case sendHigh <- res:
+    //         sendHigh = nil
+    //         sendLow = nil
+    //     case r := <-giveBack:
+    //         res = r
+    //         sendHigh = takeHigh
+    //         sendLow = takeLow
+    //     default: 
+    //         select{
+    //         case sendHigh <- res:
+    //             sendHigh = nil
+    //             sendLow = nil
+    //         case sendLow <- res:
+    //             sendHigh = nil
+    //             sendLow = nil
+    //         case r := <-giveBack:
+    //             res = r
+    //             sendHigh = takeHigh
+    //             sendLow = takeLow
+
+    //         default: 
+    //         time.Sleep(5 * time.Millisecond)
+    //         }
+            
+    //     }
+    //     if sendHigh == nil && sendLow == nil {
+    //         r := <-giveBack
+    //         res = r
+    //         sendHigh = takeHigh
+    //         sendLow = takeLow
+    //     }
+    // }
+
     
 
 // --- RESOURCE USERS -- //
